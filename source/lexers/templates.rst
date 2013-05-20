@@ -1,2 +1,2 @@
-.. automodule:: pygments.lexers.tempaltes
+.. automodule:: pygments.lexers.templates
     :members:

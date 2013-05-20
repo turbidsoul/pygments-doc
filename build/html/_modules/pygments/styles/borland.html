@@ -1,0 +1,149 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.styles.borland &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.styles" href="../styles.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../styles.html" accesskey="U">pygments.styles</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.styles.borland</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.styles.borland</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Style similar to the style used in the Borland IDEs.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygments.style</span> <span class="kn">import</span> <span class="n">Style</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Error</span><span class="p">,</span> \
+     <span class="n">Number</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Whitespace</span>
+
+
+<div class="viewcode-block" id="BorlandStyle"><a class="viewcode-back" href="../../../styles/borland.html#pygments.styles.borland.BorlandStyle">[docs]</a><span class="k">class</span> <span class="nc">BorlandStyle</span><span class="p">(</span><span class="n">Style</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Style similar to the style used in the borland IDEs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">default_style</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+    <span class="n">styles</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">Whitespace</span><span class="p">:</span>             <span class="s">&#39;#bbbbbb&#39;</span><span class="p">,</span>
+
+        <span class="n">Comment</span><span class="p">:</span>                <span class="s">&#39;italic #008800&#39;</span><span class="p">,</span>
+        <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">:</span>        <span class="s">&#39;noitalic #008080&#39;</span><span class="p">,</span>
+        <span class="n">Comment</span><span class="o">.</span><span class="n">Special</span><span class="p">:</span>        <span class="s">&#39;noitalic bold&#39;</span><span class="p">,</span>
+
+        <span class="n">String</span><span class="p">:</span>                 <span class="s">&#39;#0000FF&#39;</span><span class="p">,</span>
+        <span class="n">String</span><span class="o">.</span><span class="n">Char</span><span class="p">:</span>            <span class="s">&#39;#800080&#39;</span><span class="p">,</span>
+        <span class="n">Number</span><span class="p">:</span>                 <span class="s">&#39;#0000FF&#39;</span><span class="p">,</span>
+        <span class="n">Keyword</span><span class="p">:</span>                <span class="s">&#39;bold #000080&#39;</span><span class="p">,</span>
+        <span class="n">Operator</span><span class="o">.</span><span class="n">Word</span><span class="p">:</span>          <span class="s">&#39;bold&#39;</span><span class="p">,</span>
+        <span class="n">Name</span><span class="o">.</span><span class="n">Tag</span><span class="p">:</span>               <span class="s">&#39;bold #000080&#39;</span><span class="p">,</span>
+        <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">:</span>         <span class="s">&#39;#FF0000&#39;</span><span class="p">,</span>
+
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Heading</span><span class="p">:</span>        <span class="s">&#39;#999999&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Subheading</span><span class="p">:</span>     <span class="s">&#39;#aaaaaa&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Deleted</span><span class="p">:</span>        <span class="s">&#39;bg:#ffdddd #000000&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span>       <span class="s">&#39;bg:#ddffdd #000000&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>          <span class="s">&#39;#aa0000&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Emph</span><span class="p">:</span>           <span class="s">&#39;italic&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Strong</span><span class="p">:</span>         <span class="s">&#39;bold&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Prompt</span><span class="p">:</span>         <span class="s">&#39;#555555&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Output</span><span class="p">:</span>         <span class="s">&#39;#888888&#39;</span><span class="p">,</span>
+        <span class="n">Generic</span><span class="o">.</span><span class="n">Traceback</span><span class="p">:</span>      <span class="s">&#39;#aa0000&#39;</span><span class="p">,</span>
+
+        <span class="n">Error</span><span class="p">:</span>                  <span class="s">&#39;bg:#e3d2d2 #a61717&#39;</span>
+    <span class="p">}</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../styles.html" >pygments.styles</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

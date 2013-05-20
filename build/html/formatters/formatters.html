@@ -66,27 +66,30 @@
 </dd></dl>
 
 <dl class="class">
-<dt id="pygments.formatters.RtfFormatter">
-<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">RtfFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.RtfFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format tokens as RTF markup. This formatter automatically outputs full RTF
-documents with color information and other useful stuff. Perfect for Copy and
-Paste into Microsoft® Word® documents.</p>
-<p><em>New in Pygments 0.6.</em></p>
+<dt id="pygments.formatters.BBCodeFormatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">BBCodeFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.BBCodeFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format tokens with BBcodes. These formatting codes are used by many
+bulletin boards, so you can highlight your sourcecode with pygments before
+posting it there.</p>
+<p>This formatter has no support for background colors and borders, as there
+are no common BBcode tags for that.</p>
+<p>Some board systems (e.g. phpBB) don&#8217;t support colors in their [code] tag,
+so you can&#8217;t use the highlighting together with that tag.
+Text in a [code] tag usually is shown with a monospace font (which this
+formatter can do with the <tt class="docutils literal"><span class="pre">monofont</span></tt> option) and no spaces (which you
+need for indentation) are removed.</p>
 <p>Additional options accepted:</p>
 <dl class="docutils">
 <dt><cite>style</cite></dt>
 <dd>The style to use, can be a string or a Style subclass (default:
 <tt class="docutils literal"><span class="pre">'default'</span></tt>).</dd>
-<dt><cite>fontface</cite></dt>
-<dd>The used font famliy, for example <tt class="docutils literal"><span class="pre">Bitstream</span> <span class="pre">Vera</span> <span class="pre">Sans</span></tt>. Defaults to
-some generic font which is supposed to have fixed width.</dd>
+<dt><cite>codetag</cite></dt>
+<dd>If set to true, put the output into <tt class="docutils literal"><span class="pre">[code]</span></tt> tags (default:
+<tt class="docutils literal"><span class="pre">false</span></tt>)</dd>
+<dt><cite>monofont</cite></dt>
+<dd>If set to true, add a tag to show the code with a monospace font
+(default: <tt class="docutils literal"><span class="pre">false</span></tt>).</dd>
 </dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="pygments.formatters.NullFormatter">
-<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">NullFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.NullFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Output the text unchanged without any formatting.</p>
 </dd></dl>
 
 <dl class="class">
@@ -136,88 +139,6 @@ tuples and write it into <tt class="docutils literal"><span class="pre">outfile<
 <p>For our implementation we put all lines in their own &#8216;line group&#8217;.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="class">
-<dt id="pygments.formatters.BmpImageFormatter">
-<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">BmpImageFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.BmpImageFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a bitmap image from source code. This uses the Python Imaging Library to
-generate a pixmap from the source code.</p>
-<p><em>New in Pygments 1.0.</em> (You could create bitmap images before by passing a
-suitable <cite>image_format</cite> option to the <cite>ImageFormatter</cite>.)</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="pygments.formatters.GifImageFormatter">
-<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">GifImageFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.GifImageFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a GIF image from source code. This uses the Python Imaging Library to
-generate a pixmap from the source code.</p>
-<p><em>New in Pygments 1.0.</em> (You could create GIF images before by passing a
-suitable <cite>image_format</cite> option to the <cite>ImageFormatter</cite>.)</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="pygments.formatters.Terminal256Formatter">
-<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">Terminal256Formatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.Terminal256Formatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format tokens with ANSI color sequences, for output in a 256-color
-terminal or console. Like in <cite>TerminalFormatter</cite> color sequences
-are terminated at newlines, so that paging the output works correctly.</p>
-<p>The formatter takes colors from a style defined by the <cite>style</cite> option
-and converts them to nearest ANSI 256-color escape sequences. Bold and
-underline attributes from the style are preserved (and displayed).</p>
-<p><em>New in Pygments 0.9.</em></p>
-<p>Options accepted:</p>
-<dl class="docutils">
-<dt><cite>style</cite></dt>
-<dd>The style to use, can be a string or a Style subclass (default:
-<tt class="docutils literal"><span class="pre">'default'</span></tt>).</dd>
-</dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="pygments.formatters.BBCodeFormatter">
-<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">BBCodeFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.BBCodeFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format tokens with BBcodes. These formatting codes are used by many
-bulletin boards, so you can highlight your sourcecode with pygments before
-posting it there.</p>
-<p>This formatter has no support for background colors and borders, as there
-are no common BBcode tags for that.</p>
-<p>Some board systems (e.g. phpBB) don&#8217;t support colors in their [code] tag,
-so you can&#8217;t use the highlighting together with that tag.
-Text in a [code] tag usually is shown with a monospace font (which this
-formatter can do with the <tt class="docutils literal"><span class="pre">monofont</span></tt> option) and no spaces (which you
-need for indentation) are removed.</p>
-<p>Additional options accepted:</p>
-<dl class="docutils">
-<dt><cite>style</cite></dt>
-<dd>The style to use, can be a string or a Style subclass (default:
-<tt class="docutils literal"><span class="pre">'default'</span></tt>).</dd>
-<dt><cite>codetag</cite></dt>
-<dd>If set to true, put the output into <tt class="docutils literal"><span class="pre">[code]</span></tt> tags (default:
-<tt class="docutils literal"><span class="pre">false</span></tt>)</dd>
-<dt><cite>monofont</cite></dt>
-<dd>If set to true, add a tag to show the code with a monospace font
-(default: <tt class="docutils literal"><span class="pre">false</span></tt>).</dd>
-</dl>
-</dd></dl>
-
-<dl class="class">
-<dt id="pygments.formatters.TerminalFormatter">
-<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">TerminalFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.TerminalFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format tokens with ANSI color sequences, for output in a text console.
-Color sequences are terminated at newlines, so that paging the output
-works correctly.</p>
-<p>The <cite>get_style_defs()</cite> method doesn&#8217;t do anything special since there is
-no support for common styles.</p>
-<p>Options accepted:</p>
-<dl class="docutils">
-<dt><cite>bg</cite></dt>
-<dd>Set to <tt class="docutils literal"><span class="pre">&quot;light&quot;</span></tt> or <tt class="docutils literal"><span class="pre">&quot;dark&quot;</span></tt> depending on the terminal&#8217;s background
-(default: <tt class="docutils literal"><span class="pre">&quot;light&quot;</span></tt>).</dd>
-<dt><cite>colorscheme</cite></dt>
-<dd>A dictionary mapping token types to (lightbg, darkbg) color names or
-<tt class="docutils literal"><span class="pre">None</span></tt> (default: <tt class="docutils literal"><span class="pre">None</span></tt> = use builtin colorscheme).</dd>
-</dl>
 </dd></dl>
 
 <dl class="class">
@@ -655,6 +576,85 @@ individual lines, in custom generators. See docstring
 for <cite>format</cite>. Can be overridden.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.formatters.TerminalFormatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">TerminalFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.TerminalFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format tokens with ANSI color sequences, for output in a text console.
+Color sequences are terminated at newlines, so that paging the output
+works correctly.</p>
+<p>The <cite>get_style_defs()</cite> method doesn&#8217;t do anything special since there is
+no support for common styles.</p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>bg</cite></dt>
+<dd>Set to <tt class="docutils literal"><span class="pre">&quot;light&quot;</span></tt> or <tt class="docutils literal"><span class="pre">&quot;dark&quot;</span></tt> depending on the terminal&#8217;s background
+(default: <tt class="docutils literal"><span class="pre">&quot;light&quot;</span></tt>).</dd>
+<dt><cite>colorscheme</cite></dt>
+<dd>A dictionary mapping token types to (lightbg, darkbg) color names or
+<tt class="docutils literal"><span class="pre">None</span></tt> (default: <tt class="docutils literal"><span class="pre">None</span></tt> = use builtin colorscheme).</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.formatters.RtfFormatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">RtfFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.RtfFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format tokens as RTF markup. This formatter automatically outputs full RTF
+documents with color information and other useful stuff. Perfect for Copy and
+Paste into Microsoft® Word® documents.</p>
+<p><em>New in Pygments 0.6.</em></p>
+<p>Additional options accepted:</p>
+<dl class="docutils">
+<dt><cite>style</cite></dt>
+<dd>The style to use, can be a string or a Style subclass (default:
+<tt class="docutils literal"><span class="pre">'default'</span></tt>).</dd>
+<dt><cite>fontface</cite></dt>
+<dd>The used font famliy, for example <tt class="docutils literal"><span class="pre">Bitstream</span> <span class="pre">Vera</span> <span class="pre">Sans</span></tt>. Defaults to
+some generic font which is supposed to have fixed width.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.formatters.NullFormatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">NullFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.NullFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output the text unchanged without any formatting.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.formatters.BmpImageFormatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">BmpImageFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.BmpImageFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a bitmap image from source code. This uses the Python Imaging Library to
+generate a pixmap from the source code.</p>
+<p><em>New in Pygments 1.0.</em> (You could create bitmap images before by passing a
+suitable <cite>image_format</cite> option to the <cite>ImageFormatter</cite>.)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.formatters.Terminal256Formatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">Terminal256Formatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.Terminal256Formatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format tokens with ANSI color sequences, for output in a 256-color
+terminal or console. Like in <cite>TerminalFormatter</cite> color sequences
+are terminated at newlines, so that paging the output works correctly.</p>
+<p>The formatter takes colors from a style defined by the <cite>style</cite> option
+and converts them to nearest ANSI 256-color escape sequences. Bold and
+underline attributes from the style are preserved (and displayed).</p>
+<p><em>New in Pygments 0.9.</em></p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>style</cite></dt>
+<dd>The style to use, can be a string or a Style subclass (default:
+<tt class="docutils literal"><span class="pre">'default'</span></tt>).</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.formatters.GifImageFormatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.</tt><tt class="descname">GifImageFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#pygments.formatters.GifImageFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a GIF image from source code. This uses the Python Imaging Library to
+generate a pixmap from the source code.</p>
+<p><em>New in Pygments 1.0.</em> (You could create GIF images before by passing a
+suitable <cite>image_format</cite> option to the <cite>ImageFormatter</cite>.)</p>
 </dd></dl>
 
 </div>

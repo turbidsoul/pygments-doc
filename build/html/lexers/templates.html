@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>&lt;no title&gt; &mdash; pygments-doc 1.1.3 documentation</title>
+    <title>pygments.lexers.templates &mdash; pygments-doc 1.1.3 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -46,7 +46,429 @@
         <div class="bodywrapper">
           <div class="body">
             
-  
+  <span class="target" id="module-pygments.lexers.templates"></span><div class="section" id="pygments-lexers-templates">
+<h1>pygments.lexers.templates<a class="headerlink" href="#pygments-lexers-templates" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for various template engines&#8217; markup.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.templates.HtmlPhpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">HtmlPhpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#HtmlPhpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.HtmlPhpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <cite>PhpLexer</cite> that highlights unhandled data with the <cite>HtmlLexer</cite>.</p>
+<p>Nested Javascript and CSS is highlighted too.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.XmlPhpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">XmlPhpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#XmlPhpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.XmlPhpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <cite>PhpLexer</cite> that higlights unhandled data with the <cite>XmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CssPhpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CssPhpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CssPhpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CssPhpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <cite>PhpLexer</cite> which highlights unmatched data with the <cite>CssLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.JavascriptPhpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">JavascriptPhpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#JavascriptPhpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.JavascriptPhpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <cite>PhpLexer</cite> which highlights unmatched data with the
+<cite>JavascriptLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.ErbLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">ErbLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#ErbLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.ErbLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://ruby-doc.org/core/classes/ERB.html">ERB</a> (Ruby Templating)
+lexer.</p>
+<p>Just highlights ruby code between the preprocessor directives, other data
+is left untouched by the lexer.</p>
+<p>All options are also forwarded to the <cite>RubyLexer</cite>.</p>
+<dl class="method">
+<dt id="pygments.lexers.templates.ErbLexer.get_tokens_unprocessed">
+<tt class="descname">get_tokens_unprocessed</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#ErbLexer.get_tokens_unprocessed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.ErbLexer.get_tokens_unprocessed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Since ERB doesn&#8217;t allow &#8220;&lt;%&#8221; and other tags inside of ruby
+blocks we have to use a split approach here that fails for
+that too.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.RhtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">RhtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#RhtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.RhtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the ERB lexer that highlights the unlexed data with the
+html lexer.</p>
+<p>Nested Javascript and CSS is highlighted too.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.XmlErbLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">XmlErbLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#XmlErbLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.XmlErbLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <cite>ErbLexer</cite> which highlights data outside preprocessor
+directives with the <cite>XmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CssErbLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CssErbLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CssErbLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CssErbLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <cite>ErbLexer</cite> which highlights unlexed data with the <cite>CssLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.JavascriptErbLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">JavascriptErbLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#JavascriptErbLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.JavascriptErbLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <cite>ErbLexer</cite> which highlights unlexed data with the
+<cite>JavascriptLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.SmartyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">SmartyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#SmartyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.SmartyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://smarty.php.net/">Smarty</a> template lexer.</p>
+<p>Just highlights smarty code between the preprocessor directives, other
+data is left untouched by the lexer.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.HtmlSmartyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">HtmlSmartyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#HtmlSmartyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.HtmlSmartyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>SmartyLexer</cite> that highighlights unlexed data with the
+<cite>HtmlLexer</cite>.</p>
+<p>Nested Javascript and CSS is highlighted too.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.XmlSmartyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">XmlSmartyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#XmlSmartyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.XmlSmartyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>SmartyLexer</cite> that highlights unlexed data with the
+<cite>XmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CssSmartyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CssSmartyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CssSmartyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CssSmartyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>SmartyLexer</cite> that highlights unlexed data with the
+<cite>CssLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.JavascriptSmartyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">JavascriptSmartyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#JavascriptSmartyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.JavascriptSmartyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>SmartyLexer</cite> that highlights unlexed data with the
+<cite>JavascriptLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.DjangoLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">DjangoLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#DjangoLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.DjangoLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://www.djangoproject.com/documentation/templates/">django</a>
+and <a class="reference external" href="http://wsgiarea.pocoo.org/jinja/">jinja</a> template lexer.</p>
+<p>It just highlights django/jinja code between the preprocessor directives,
+other data is left untouched by the lexer.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.HtmlDjangoLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">HtmlDjangoLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#HtmlDjangoLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.HtmlDjangoLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>DjangoLexer</cite> that highighlights unlexed data with the
+<cite>HtmlLexer</cite>.</p>
+<p>Nested Javascript and CSS is highlighted too.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CssDjangoLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CssDjangoLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CssDjangoLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CssDjangoLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>DjangoLexer</cite> that highlights unlexed data with the
+<cite>CssLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.XmlDjangoLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">XmlDjangoLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#XmlDjangoLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.XmlDjangoLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>DjangoLexer</cite> that highlights unlexed data with the
+<cite>XmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.JavascriptDjangoLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">JavascriptDjangoLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#JavascriptDjangoLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.JavascriptDjangoLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>DjangoLexer</cite> that highlights unlexed data with the
+<cite>JavascriptLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.GenshiLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">GenshiLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#GenshiLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.GenshiLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer that highlights <a class="reference external" href="http://genshi.edgewall.org/">genshi</a> and
+<a class="reference external" href="http://kid-templating.org/">kid</a> kid XML templates.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.HtmlGenshiLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">HtmlGenshiLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#HtmlGenshiLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.HtmlGenshiLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer that highlights <a class="reference external" href="http://genshi.edgewall.org/">genshi</a> and
+<a class="reference external" href="http://kid-templating.org/">kid</a> kid HTML templates.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.GenshiTextLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">GenshiTextLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#GenshiTextLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.GenshiTextLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer that highlights <a class="reference external" href="http://genshi.edgewall.org/">genshi</a> text
+templates.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CssGenshiLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CssGenshiLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CssGenshiLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CssGenshiLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer that highlights CSS definitions in genshi text templates.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.JavascriptGenshiLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">JavascriptGenshiLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#JavascriptGenshiLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.JavascriptGenshiLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer that highlights javascript code in genshi text templates.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MyghtyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MyghtyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MyghtyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MyghtyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://www.myghty.org/">myghty templates</a> lexer. Code that isn&#8217;t Myghty
+markup is yielded as <cite>Token.Other</cite>.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MyghtyHtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MyghtyHtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MyghtyHtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MyghtyHtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MyghtyLexer</cite> that highlights unlexer data
+with the <cite>HtmlLexer</cite>.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MyghtyXmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MyghtyXmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MyghtyXmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MyghtyXmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MyghtyLexer</cite> that highlights unlexer data
+with the <cite>XmlLexer</cite>.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MyghtyCssLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MyghtyCssLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MyghtyCssLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MyghtyCssLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MyghtyLexer</cite> that highlights unlexer data
+with the <cite>CssLexer</cite>.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MyghtyJavascriptLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MyghtyJavascriptLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MyghtyJavascriptLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MyghtyJavascriptLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MyghtyLexer</cite> that highlights unlexer data
+with the <cite>JavascriptLexer</cite>.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MasonLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MasonLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MasonLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MasonLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://www.masonhq.com/">mason templates</a> lexer. Stolen from Myghty lexer. Code that isn&#8217;t
+Mason markup is HTML.</p>
+<p><em>New in Pygments 1.4.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MakoLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MakoLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MakoLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MakoLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://www.makotemplates.org/">mako templates</a> lexer. Code that isn&#8217;t Mako
+markup is yielded as <cite>Token.Other</cite>.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MakoHtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MakoHtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MakoHtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MakoHtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MakoLexer</cite> that highlights unlexed data
+with the <cite>HtmlLexer</cite>.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MakoXmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MakoXmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MakoXmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MakoXmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MakoLexer</cite> that highlights unlexer data
+with the <cite>XmlLexer</cite>.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MakoJavascriptLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MakoJavascriptLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MakoJavascriptLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MakoJavascriptLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MakoLexer</cite> that highlights unlexer data
+with the <cite>JavascriptLexer</cite>.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.MakoCssLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">MakoCssLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#MakoCssLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.MakoCssLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>MakoLexer</cite> that highlights unlexer data
+with the <cite>CssLexer</cite>.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.JspLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">JspLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#JspLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.JspLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for Java Server Pages.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CheetahLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CheetahLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CheetahLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CheetahLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://www.cheetahtemplate.org/">cheetah templates</a> lexer. Code that isn&#8217;t Cheetah
+markup is yielded as <cite>Token.Other</cite>.  This also works for
+<a class="reference external" href="http://code.google.com/p/spitfire/">spitfire templates</a> which use the same syntax.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CheetahHtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CheetahHtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CheetahHtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CheetahHtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>CheetahLexer</cite> that highlights unlexer data
+with the <cite>HtmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CheetahXmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CheetahXmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CheetahXmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CheetahXmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>CheetahLexer</cite> that highlights unlexer data
+with the <cite>XmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.CheetahJavascriptLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">CheetahJavascriptLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#CheetahJavascriptLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.CheetahJavascriptLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>CheetahLexer</cite> that highlights unlexer data
+with the <cite>JavascriptLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.EvoqueLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">EvoqueLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#EvoqueLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.EvoqueLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For files using the Evoque templating system.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.EvoqueHtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">EvoqueHtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#EvoqueHtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.EvoqueHtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>EvoqueLexer</cite> that highlights unlexed data with the
+<cite>HtmlLexer</cite>.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.EvoqueXmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">EvoqueXmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#EvoqueXmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.EvoqueXmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>EvoqueLexer</cite> that highlights unlexed data with the
+<cite>XmlLexer</cite>.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.ColdfusionLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">ColdfusionLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#ColdfusionLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.ColdfusionLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coldfusion statements</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.ColdfusionHtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">ColdfusionHtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#ColdfusionHtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.ColdfusionHtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coldfusion markup in html</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.VelocityLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">VelocityLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#VelocityLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.VelocityLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://velocity.apache.org/">Velocity</a> template lexer.</p>
+<p>Just highlights velocity directives and variable references, other
+data is left untouched by the lexer.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.VelocityHtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">VelocityHtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#VelocityHtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.VelocityHtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>VelocityLexer</cite> that highlights unlexer data
+with the <cite>HtmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.VelocityXmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">VelocityXmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#VelocityXmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.VelocityXmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>VelocityLexer</cite> that highlights unlexer data
+with the <cite>XmlLexer</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.SspLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">SspLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#SspLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.SspLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for Scalate Server Pages.</p>
+<p><em>New in Pygments 1.4.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.TeaTemplateLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">TeaTemplateLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#TeaTemplateLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.TeaTemplateLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://teatrove.org/">Tea Templates</a>.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.LassoHtmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">LassoHtmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#LassoHtmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.LassoHtmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>LassoLexer</cite> which highlights unhandled data with the
+<cite>HtmlLexer</cite>.</p>
+<p>Nested JavaScript and CSS is also highlighted.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.LassoXmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">LassoXmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#LassoXmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.LassoXmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>LassoLexer</cite> which highlights unhandled data with the
+<cite>XmlLexer</cite>.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.LassoCssLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">LassoCssLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#LassoCssLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.LassoCssLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>LassoLexer</cite> which highlights unhandled data with the
+<cite>CssLexer</cite>.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.templates.LassoJavascriptLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.templates.</tt><tt class="descname">LassoJavascriptLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/templates.html#LassoJavascriptLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.templates.LassoJavascriptLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of the <cite>LassoLexer</cite> which highlights unhandled data with the
+<cite>JavascriptLexer</cite>.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+</div>
+
 
           </div>
         </div>

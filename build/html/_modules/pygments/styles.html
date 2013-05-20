@@ -1,0 +1,166 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.styles &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../index.html" />
+    <link rel="up" title="pygments" href="../pygments.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" accesskey="U">pygments</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.styles</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.styles</span>
+<span class="sd">    ~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Contains built-in styles.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygments.plugin</span> <span class="kn">import</span> <span class="n">find_plugin_styles</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">ClassNotFound</span>
+
+
+<span class="c">#: Maps style names to &#39;submodule::classname&#39;.</span>
+<span class="n">STYLE_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;default&#39;</span><span class="p">:</span>  <span class="s">&#39;default::DefaultStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;emacs&#39;</span><span class="p">:</span>    <span class="s">&#39;emacs::EmacsStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;friendly&#39;</span><span class="p">:</span> <span class="s">&#39;friendly::FriendlyStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;colorful&#39;</span><span class="p">:</span> <span class="s">&#39;colorful::ColorfulStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;autumn&#39;</span><span class="p">:</span>   <span class="s">&#39;autumn::AutumnStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;murphy&#39;</span><span class="p">:</span>   <span class="s">&#39;murphy::MurphyStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;manni&#39;</span><span class="p">:</span>    <span class="s">&#39;manni::ManniStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;monokai&#39;</span><span class="p">:</span>  <span class="s">&#39;monokai::MonokaiStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;perldoc&#39;</span><span class="p">:</span>  <span class="s">&#39;perldoc::PerldocStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;pastie&#39;</span><span class="p">:</span>   <span class="s">&#39;pastie::PastieStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;borland&#39;</span><span class="p">:</span>  <span class="s">&#39;borland::BorlandStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;trac&#39;</span><span class="p">:</span>     <span class="s">&#39;trac::TracStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;native&#39;</span><span class="p">:</span>   <span class="s">&#39;native::NativeStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;fruity&#39;</span><span class="p">:</span>   <span class="s">&#39;fruity::FruityStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;bw&#39;</span><span class="p">:</span>       <span class="s">&#39;bw::BlackWhiteStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;vim&#39;</span><span class="p">:</span>      <span class="s">&#39;vim::VimStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;vs&#39;</span><span class="p">:</span>       <span class="s">&#39;vs::VisualStudioStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;tango&#39;</span><span class="p">:</span>    <span class="s">&#39;tango::TangoStyle&#39;</span><span class="p">,</span>
+    <span class="s">&#39;rrt&#39;</span><span class="p">:</span>      <span class="s">&#39;rrt::RrtStyle&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">get_style_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">STYLE_MAP</span><span class="p">:</span>
+        <span class="n">mod</span><span class="p">,</span> <span class="n">cls</span> <span class="o">=</span> <span class="n">STYLE_MAP</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;::&#39;</span><span class="p">)</span>
+        <span class="n">builtin</span> <span class="o">=</span> <span class="s">&quot;yes&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">found_name</span><span class="p">,</span> <span class="n">style</span> <span class="ow">in</span> <span class="n">find_plugin_styles</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">found_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">style</span>
+        <span class="c"># perhaps it got dropped into our styles package</span>
+        <span class="n">builtin</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;Style&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s">&#39;pygments.styles.&#39;</span> <span class="o">+</span> <span class="n">mod</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="n">cls</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&quot;Could not find style module </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">mod</span> <span class="o">+</span>
+                         <span class="p">(</span><span class="n">builtin</span> <span class="ow">and</span> <span class="s">&quot;, though it should be builtin&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&quot;Could not find style class </span><span class="si">%r</span><span class="s"> in style module.&quot;</span> <span class="o">%</span> <span class="n">cls</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_all_styles"><a class="viewcode-back" href="../../styles/styles.html#pygments.styles.get_all_styles">[docs]</a><span class="k">def</span> <span class="nf">get_all_styles</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return an generator for all styles by name,</span>
+<span class="sd">    both builtin and plugin.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">STYLE_MAP</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">name</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">find_plugin_styles</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="n">name</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" >pygments</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
