@@ -1,0 +1,657 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.sql &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.lexers" href="../lexers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" accesskey="U">pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.lexers.sql</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.lexers.sql</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Lexers for various SQL dialects and related interactive sessions.</span>
+
+<span class="sd">    Postgres specific lexers:</span>
+
+<span class="sd">    `PostgresLexer`</span>
+<span class="sd">        A SQL lexer for the PostgreSQL dialect. Differences w.r.t. the SQL</span>
+<span class="sd">        lexer are:</span>
+
+<span class="sd">        - keywords and data types list parsed from the PG docs (run the</span>
+<span class="sd">          `_postgres_builtins` module to update them);</span>
+<span class="sd">        - Content of $-strings parsed using a specific lexer, e.g. the content</span>
+<span class="sd">          of a PL/Python function is parsed using the Python lexer;</span>
+<span class="sd">        - parse PG specific constructs: E-strings, $-strings, U&amp;-strings,</span>
+<span class="sd">          different operators and punctuation.</span>
+
+<span class="sd">    `PlPgsqlLexer`</span>
+<span class="sd">        A lexer for the PL/pgSQL language. Adds a few specific construct on</span>
+<span class="sd">        top of the PG SQL lexer (such as &lt;&lt;label&gt;&gt;).</span>
+
+<span class="sd">    `PostgresConsoleLexer`</span>
+<span class="sd">        A lexer to highlight an interactive psql session:</span>
+
+<span class="sd">        - identifies the prompt and does its best to detect the end of command</span>
+<span class="sd">          in multiline statement where not all the lines are prefixed by a</span>
+<span class="sd">          prompt, telling them apart from the output;</span>
+<span class="sd">        - highlights errors in the output and notification levels;</span>
+<span class="sd">        - handles psql backslash commands.</span>
+
+<span class="sd">    The ``tests/examplefiles`` contains a few test files with data to be</span>
+<span class="sd">    parsed by these lexers.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">pygments.lexer</span> <span class="kn">import</span> <span class="n">Lexer</span><span class="p">,</span> <span class="n">RegexLexer</span><span class="p">,</span> <span class="n">do_insertions</span><span class="p">,</span> <span class="n">bygroups</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Punctuation</span><span class="p">,</span> \
+     <span class="n">Text</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="n">Generic</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers</span> <span class="kn">import</span> <span class="n">get_lexer_by_name</span><span class="p">,</span> <span class="n">ClassNotFound</span>
+
+<span class="kn">from</span> <span class="nn">pygments.lexers._postgres_builtins</span> <span class="kn">import</span> <span class="n">KEYWORDS</span><span class="p">,</span> <span class="n">DATATYPES</span><span class="p">,</span> \
+     <span class="n">PSEUDO_TYPES</span><span class="p">,</span> <span class="n">PLPGSQL_KEYWORDS</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;PostgresLexer&#39;</span><span class="p">,</span> <span class="s">&#39;PlPgsqlLexer&#39;</span><span class="p">,</span> <span class="s">&#39;PostgresConsoleLexer&#39;</span><span class="p">,</span>
+           <span class="s">&#39;SqlLexer&#39;</span><span class="p">,</span> <span class="s">&#39;MySqlLexer&#39;</span><span class="p">,</span> <span class="s">&#39;SqliteConsoleLexer&#39;</span><span class="p">]</span>
+
+<span class="n">line_re</span>  <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;.*?</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+<span class="n">language_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&quot;\s+LANGUAGE\s+&#39;?(\w+)&#39;?&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">language_callback</span><span class="p">(</span><span class="n">lexer</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the content of a $-string using a lexer</span>
+
+<span class="sd">    The lexer is chosen looking for a nearby LANGUAGE.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">language_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">lexer</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">():</span><span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span><span class="o">+</span><span class="mi">100</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">lexer</span><span class="o">.</span><span class="n">_get_lexer</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">language_re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span>
+            <span class="n">lexer</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="o">-</span><span class="mi">100</span><span class="p">):</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()]))</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">lexer</span><span class="o">.</span><span class="n">_get_lexer</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">l</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">String</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">get_tokens_unprocessed</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">x</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">String</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">String</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">PostgresBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for Postgres-related lexers.</span>
+
+<span class="sd">    This is implemented as a mixin to avoid the Lexer metaclass kicking in.</span>
+<span class="sd">    this way the different lexer don&#39;t have a common Lexer ancestor. If they</span>
+<span class="sd">    had, _tokens could be created on this ancestor and not updated for the</span>
+<span class="sd">    other classes, resulting e.g. in PL/pgSQL parsed as SQL. This shortcoming</span>
+<span class="sd">    seem to suggest that regexp lexers are not really subclassable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">get_tokens_unprocessed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="c"># Have a copy of the entire text to be used by `language_callback`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">PostgresBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_tokens_unprocessed</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">_get_lexer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lang</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;sql&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">get_lexer_by_name</span><span class="p">(</span><span class="s">&#39;postgresql&#39;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="n">tries</span> <span class="o">=</span> <span class="p">[</span> <span class="n">lang</span> <span class="p">]</span>
+        <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;pl&#39;</span><span class="p">):</span>
+            <span class="n">tries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lang</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;u&#39;</span><span class="p">):</span>
+            <span class="n">tries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lang</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;pl&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">lang</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;u&#39;</span><span class="p">):</span>
+            <span class="n">tries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lang</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">tries</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">get_lexer_by_name</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># TODO: better logging</span>
+            <span class="c"># print &gt;&gt;sys.stderr, &quot;language not found:&quot;, lang</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+
+<div class="viewcode-block" id="PostgresLexer"><a class="viewcode-back" href="../../../lexers/sql.html#pygments.lexers.sql.PostgresLexer">[docs]</a><span class="k">class</span> <span class="nc">PostgresLexer</span><span class="p">(</span><span class="n">PostgresBase</span><span class="p">,</span> <span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lexer for the PostgreSQL dialect of SQL.</span>
+
+<span class="sd">    *New in Pygments 1.5.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;PostgreSQL SQL dialect&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;postgresql&#39;</span><span class="p">,</span> <span class="s">&#39;postgres&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-postgresql&#39;</span><span class="p">]</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;--.*?\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;/\*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;multiline-comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">,</span> <span class="s">&quot;\s+&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">DATATYPES</span> <span class="o">+</span> <span class="n">PSEUDO_TYPES</span><span class="p">])</span>
+                  <span class="o">+</span> <span class="s">r&#39;)\b&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">KEYWORDS</span><span class="p">)</span> <span class="o">+</span> <span class="s">r&#39;)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[+*/&lt;&gt;=~!@#%^&amp;|`?-]+&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;::&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>  <span class="c"># cast</span>
+            <span class="p">(</span><span class="s">r&#39;\$\d+&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;([0-9]*\.[0-9]*|[0-9]+)(e[+-]?[0-9]+)?&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Float</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[0-9]+&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&quot;(E|U&amp;)?&#39;(&#39;&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(U&amp;)?&quot;(&quot;&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Name</span><span class="p">),</span> <span class="c"># quoted identifier</span>
+            <span class="p">(</span><span class="s">r&#39;(?s)(\$[^\$]*\$)(.*?)(\1)&#39;</span><span class="p">,</span> <span class="n">language_callback</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[a-zA-Z_][a-zA-Z0-9_]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="p">),</span>
+
+            <span class="c"># psql variable in SQL</span>
+            <span class="p">(</span><span class="s">r&quot;&quot;&quot;:([&#39;&quot;]?)[a-z][a-z0-9_]*\b\1&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;[;:()\[\]\{\},\.]&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;multiline-comments&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;/\*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;multiline-comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\*/&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[^/\*]+&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[/*]&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="PlPgsqlLexer"><a class="viewcode-back" href="../../../lexers/sql.html#pygments.lexers.sql.PlPgsqlLexer">[docs]</a><span class="k">class</span> <span class="nc">PlPgsqlLexer</span><span class="p">(</span><span class="n">PostgresBase</span><span class="p">,</span> <span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle the extra syntax in Pl/pgSQL language.</span>
+
+<span class="sd">    *New in Pygments 1.5.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;PL/pgSQL&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;plpgsql&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-plpgsql&#39;</span><span class="p">]</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">[:])</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="ow">in</span> <span class="n">PostgresLexer</span><span class="o">.</span><span class="n">tokens</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span>
+
+    <span class="c"># extend the keywords list</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="s">&#39;root&#39;</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">pattern</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">Keyword</span><span class="p">:</span>
+            <span class="n">tokens</span><span class="p">[</span><span class="s">&#39;root&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">KEYWORDS</span> <span class="o">+</span> <span class="n">PLPGSQL_KEYWORDS</span><span class="p">)</span> <span class="o">+</span> <span class="s">r&#39;)\b&#39;</span><span class="p">,</span>
+                <span class="n">Keyword</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">i</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;SQL keywords not found&quot;</span>
+
+    <span class="c"># Add specific PL/pgSQL rules (before the SQL ones)</span>
+    <span class="n">tokens</span><span class="p">[</span><span class="s">&#39;root&#39;</span><span class="p">][:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s">r&#39;\%[a-z][a-z0-9_]*\b&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">),</span>     <span class="c"># actually, a datatype</span>
+        <span class="p">(</span><span class="s">r&#39;:=&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&#39;\&lt;\&lt;[a-z][a-z0-9_]*\&gt;\&gt;&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&#39;\#[a-z][a-z0-9_]*\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Pseudo</span><span class="p">),</span>   <span class="c"># #variable_conflict</span>
+    <span class="p">]</span>
+
+</div>
+<span class="k">class</span> <span class="nc">PsqlRegexLexer</span><span class="p">(</span><span class="n">PostgresBase</span><span class="p">,</span> <span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extend the PostgresLexer adding support specific for psql commands.</span>
+
+<span class="sd">    This is not a complete psql lexer yet as it lacks prompt support</span>
+<span class="sd">    and output rendering.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;PostgreSQL console - regexp based lexer&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[]</span>    <span class="c"># not public</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">[:])</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="ow">in</span> <span class="n">PostgresLexer</span><span class="o">.</span><span class="n">tokens</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span>
+
+    <span class="n">tokens</span><span class="p">[</span><span class="s">&#39;root&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="p">(</span><span class="s">r&#39;</span><span class="se">\\</span><span class="s">[^\s]+&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Pseudo</span><span class="p">,</span> <span class="s">&#39;psql-command&#39;</span><span class="p">))</span>
+    <span class="n">tokens</span><span class="p">[</span><span class="s">&#39;psql-command&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s">r&#39;\n&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="s">&#39;root&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&#39;</span><span class="se">\\</span><span class="s">[^\s]+&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Pseudo</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&quot;&quot;&quot;:([&#39;&quot;]?)[a-z][a-z0-9_]*\b\1&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&quot;&#39;(&#39;&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&quot;`([^`])*`&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Backtick</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">r&quot;[^\s]+&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Symbol</span><span class="p">),</span>
+    <span class="p">]</span>
+
+<span class="n">re_prompt</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(\S.*?)??[=\-\(\$</span><span class="se">\&#39;</span><span class="s">\&quot;][#&gt;]&#39;</span><span class="p">)</span>
+<span class="n">re_psql_command</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\s*</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">)</span>
+<span class="n">re_end_command</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;;\s*(--.*?)?$&#39;</span><span class="p">)</span>
+<span class="n">re_psql_command</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(\s*)(</span><span class="se">\\</span><span class="s">.+?)(\s+)$&#39;</span><span class="p">)</span>
+<span class="n">re_error</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(ERROR|FATAL):&#39;</span><span class="p">)</span>
+<span class="n">re_message</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="s">r&#39;((?:DEBUG|INFO|NOTICE|WARNING|ERROR|&#39;</span>
+    <span class="s">r&#39;FATAL|HINT|DETAIL|CONTEXT|LINE [0-9]+):)(.*?\n)&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">lookahead</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrap an iterator and allow pushing back an item.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nextitem</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nextitem</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="n">i</span>
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextitem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ni</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextitem</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nextitem</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">return</span> <span class="n">ni</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="PostgresConsoleLexer"><a class="viewcode-back" href="../../../lexers/sql.html#pygments.lexers.sql.PostgresConsoleLexer">[docs]</a><span class="k">class</span> <span class="nc">PostgresConsoleLexer</span><span class="p">(</span><span class="n">Lexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lexer for psql sessions.</span>
+
+<span class="sd">    *New in Pygments 1.5.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;PostgreSQL console (psql)&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;psql&#39;</span><span class="p">,</span> <span class="s">&#39;postgresql-console&#39;</span><span class="p">,</span> <span class="s">&#39;postgres-console&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-postgresql-psql&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_tokens_unprocessed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="n">PsqlRegexLexer</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">lookahead</span><span class="p">(</span><span class="n">line_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+        <span class="c"># prompt-output cycle</span>
+        <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="c"># consume the lines of the command: start with an optional prompt</span>
+            <span class="c"># and continue until the end of command is detected</span>
+            <span class="n">curcode</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="n">insertions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                    <span class="c"># allow the emission of partially collected items</span>
+                    <span class="c"># the repl loop will be broken below</span>
+                    <span class="k">break</span>
+
+                <span class="c"># Identify a shell prompt in case of psql commandline example</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;$&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">curcode</span><span class="p">:</span>
+                    <span class="n">lexer</span> <span class="o">=</span> <span class="n">get_lexer_by_name</span><span class="p">(</span><span class="s">&#39;console&#39;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lexer</span><span class="o">.</span><span class="n">get_tokens_unprocessed</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+                        <span class="k">yield</span> <span class="n">x</span>
+                    <span class="k">break</span>
+
+                <span class="c"># Identify a psql prompt</span>
+                <span class="n">mprompt</span> <span class="o">=</span> <span class="n">re_prompt</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mprompt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">insertions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">curcode</span><span class="p">),</span>
+                                       <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Generic</span><span class="o">.</span><span class="n">Prompt</span><span class="p">,</span> <span class="n">mprompt</span><span class="o">.</span><span class="n">group</span><span class="p">())]))</span>
+                    <span class="n">curcode</span> <span class="o">+=</span> <span class="n">line</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">mprompt</span><span class="o">.</span><span class="n">group</span><span class="p">()):]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">curcode</span> <span class="o">+=</span> <span class="n">line</span>
+
+                <span class="c"># Check if this is the end of the command</span>
+                <span class="c"># TODO: better handle multiline comments at the end with</span>
+                <span class="c"># a lexer with an external state?</span>
+                <span class="k">if</span> <span class="n">re_psql_command</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">curcode</span><span class="p">)</span> \
+                <span class="ow">or</span> <span class="n">re_end_command</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">curcode</span><span class="p">):</span>
+                    <span class="k">break</span>
+
+            <span class="c"># Emit the combined stream of command and prompt(s)</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">do_insertions</span><span class="p">(</span><span class="n">insertions</span><span class="p">,</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">get_tokens_unprocessed</span><span class="p">(</span><span class="n">curcode</span><span class="p">)):</span>
+                <span class="k">yield</span> <span class="n">item</span>
+
+            <span class="c"># Emit the output lines</span>
+            <span class="n">out_token</span> <span class="o">=</span> <span class="n">Generic</span><span class="o">.</span><span class="n">Output</span>
+            <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                <span class="n">mprompt</span> <span class="o">=</span> <span class="n">re_prompt</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mprompt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="c"># push the line back to have it processed by the prompt</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+                <span class="n">mmsg</span> <span class="o">=</span> <span class="n">re_message</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mmsg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">mmsg</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;ERROR&quot;</span><span class="p">)</span> \
+                    <span class="ow">or</span> <span class="n">mmsg</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;FATAL&quot;</span><span class="p">):</span>
+                        <span class="n">out_token</span> <span class="o">=</span> <span class="n">Generic</span><span class="o">.</span><span class="n">Error</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">mmsg</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Generic</span><span class="o">.</span><span class="n">Strong</span><span class="p">,</span> <span class="n">mmsg</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">mmsg</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">out_token</span><span class="p">,</span> <span class="n">mmsg</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">out_token</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SqlLexer"><a class="viewcode-back" href="../../../lexers/sql.html#pygments.lexers.sql.SqlLexer">[docs]</a><span class="k">class</span> <span class="nc">SqlLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lexer for Structured Query Language. Currently, this lexer does</span>
+<span class="sd">    not recognize any special syntax except ANSI SQL.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;SQL&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sql&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.sql&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-sql&#39;</span><span class="p">]</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;--.*?\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;/\*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;multiline-comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(ABORT|ABS|ABSOLUTE|ACCESS|ADA|ADD|ADMIN|AFTER|AGGREGATE|&#39;</span>
+             <span class="s">r&#39;ALIAS|ALL|ALLOCATE|ALTER|ANALYSE|ANALYZE|AND|ANY|ARE|AS|&#39;</span>
+             <span class="s">r&#39;ASC|ASENSITIVE|ASSERTION|ASSIGNMENT|ASYMMETRIC|AT|ATOMIC|&#39;</span>
+             <span class="s">r&#39;AUTHORIZATION|AVG|BACKWARD|BEFORE|BEGIN|BETWEEN|BITVAR|&#39;</span>
+             <span class="s">r&#39;BIT_LENGTH|BOTH|BREADTH|BY|C|CACHE|CALL|CALLED|CARDINALITY|&#39;</span>
+             <span class="s">r&#39;CASCADE|CASCADED|CASE|CAST|CATALOG|CATALOG_NAME|CHAIN|&#39;</span>
+             <span class="s">r&#39;CHARACTERISTICS|CHARACTER_LENGTH|CHARACTER_SET_CATALOG|&#39;</span>
+             <span class="s">r&#39;CHARACTER_SET_NAME|CHARACTER_SET_SCHEMA|CHAR_LENGTH|CHECK|&#39;</span>
+             <span class="s">r&#39;CHECKED|CHECKPOINT|CLASS|CLASS_ORIGIN|CLOB|CLOSE|CLUSTER|&#39;</span>
+             <span class="s">r&#39;COALSECE|COBOL|COLLATE|COLLATION|COLLATION_CATALOG|&#39;</span>
+             <span class="s">r&#39;COLLATION_NAME|COLLATION_SCHEMA|COLUMN|COLUMN_NAME|&#39;</span>
+             <span class="s">r&#39;COMMAND_FUNCTION|COMMAND_FUNCTION_CODE|COMMENT|COMMIT|&#39;</span>
+             <span class="s">r&#39;COMMITTED|COMPLETION|CONDITION_NUMBER|CONNECT|CONNECTION|&#39;</span>
+             <span class="s">r&#39;CONNECTION_NAME|CONSTRAINT|CONSTRAINTS|CONSTRAINT_CATALOG|&#39;</span>
+             <span class="s">r&#39;CONSTRAINT_NAME|CONSTRAINT_SCHEMA|CONSTRUCTOR|CONTAINS|&#39;</span>
+             <span class="s">r&#39;CONTINUE|CONVERSION|CONVERT|COPY|CORRESPONTING|COUNT|&#39;</span>
+             <span class="s">r&#39;CREATE|CREATEDB|CREATEUSER|CROSS|CUBE|CURRENT|CURRENT_DATE|&#39;</span>
+             <span class="s">r&#39;CURRENT_PATH|CURRENT_ROLE|CURRENT_TIME|CURRENT_TIMESTAMP|&#39;</span>
+             <span class="s">r&#39;CURRENT_USER|CURSOR|CURSOR_NAME|CYCLE|DATA|DATABASE|&#39;</span>
+             <span class="s">r&#39;DATETIME_INTERVAL_CODE|DATETIME_INTERVAL_PRECISION|DAY|&#39;</span>
+             <span class="s">r&#39;DEALLOCATE|DECLARE|DEFAULT|DEFAULTS|DEFERRABLE|DEFERRED|&#39;</span>
+             <span class="s">r&#39;DEFINED|DEFINER|DELETE|DELIMITER|DELIMITERS|DEREF|DESC|&#39;</span>
+             <span class="s">r&#39;DESCRIBE|DESCRIPTOR|DESTROY|DESTRUCTOR|DETERMINISTIC|&#39;</span>
+             <span class="s">r&#39;DIAGNOSTICS|DICTIONARY|DISCONNECT|DISPATCH|DISTINCT|DO|&#39;</span>
+             <span class="s">r&#39;DOMAIN|DROP|DYNAMIC|DYNAMIC_FUNCTION|DYNAMIC_FUNCTION_CODE|&#39;</span>
+             <span class="s">r&#39;EACH|ELSE|ENCODING|ENCRYPTED|END|END-EXEC|EQUALS|ESCAPE|EVERY|&#39;</span>
+             <span class="s">r&#39;EXCEPT|ESCEPTION|EXCLUDING|EXCLUSIVE|EXEC|EXECUTE|EXISTING|&#39;</span>
+             <span class="s">r&#39;EXISTS|EXPLAIN|EXTERNAL|EXTRACT|FALSE|FETCH|FINAL|FIRST|FOR|&#39;</span>
+             <span class="s">r&#39;FORCE|FOREIGN|FORTRAN|FORWARD|FOUND|FREE|FREEZE|FROM|FULL|&#39;</span>
+             <span class="s">r&#39;FUNCTION|G|GENERAL|GENERATED|GET|GLOBAL|GO|GOTO|GRANT|GRANTED|&#39;</span>
+             <span class="s">r&#39;GROUP|GROUPING|HANDLER|HAVING|HIERARCHY|HOLD|HOST|IDENTITY|&#39;</span>
+             <span class="s">r&#39;IGNORE|ILIKE|IMMEDIATE|IMMUTABLE|IMPLEMENTATION|IMPLICIT|IN|&#39;</span>
+             <span class="s">r&#39;INCLUDING|INCREMENT|INDEX|INDITCATOR|INFIX|INHERITS|INITIALIZE|&#39;</span>
+             <span class="s">r&#39;INITIALLY|INNER|INOUT|INPUT|INSENSITIVE|INSERT|INSTANTIABLE|&#39;</span>
+             <span class="s">r&#39;INSTEAD|INTERSECT|INTO|INVOKER|IS|ISNULL|ISOLATION|ITERATE|JOIN|&#39;</span>
+             <span class="s">r&#39;KEY|KEY_MEMBER|KEY_TYPE|LANCOMPILER|LANGUAGE|LARGE|LAST|&#39;</span>
+             <span class="s">r&#39;LATERAL|LEADING|LEFT|LENGTH|LESS|LEVEL|LIKE|LIMIT|LISTEN|LOAD|&#39;</span>
+             <span class="s">r&#39;LOCAL|LOCALTIME|LOCALTIMESTAMP|LOCATION|LOCATOR|LOCK|LOWER|&#39;</span>
+             <span class="s">r&#39;MAP|MATCH|MAX|MAXVALUE|MESSAGE_LENGTH|MESSAGE_OCTET_LENGTH|&#39;</span>
+             <span class="s">r&#39;MESSAGE_TEXT|METHOD|MIN|MINUTE|MINVALUE|MOD|MODE|MODIFIES|&#39;</span>
+             <span class="s">r&#39;MODIFY|MONTH|MORE|MOVE|MUMPS|NAMES|NATIONAL|NATURAL|NCHAR|&#39;</span>
+             <span class="s">r&#39;NCLOB|NEW|NEXT|NO|NOCREATEDB|NOCREATEUSER|NONE|NOT|NOTHING|&#39;</span>
+             <span class="s">r&#39;NOTIFY|NOTNULL|NULL|NULLABLE|NULLIF|OBJECT|OCTET_LENGTH|OF|OFF|&#39;</span>
+             <span class="s">r&#39;OFFSET|OIDS|OLD|ON|ONLY|OPEN|OPERATION|OPERATOR|OPTION|OPTIONS|&#39;</span>
+             <span class="s">r&#39;OR|ORDER|ORDINALITY|OUT|OUTER|OUTPUT|OVERLAPS|OVERLAY|OVERRIDING|&#39;</span>
+             <span class="s">r&#39;OWNER|PAD|PARAMETER|PARAMETERS|PARAMETER_MODE|PARAMATER_NAME|&#39;</span>
+             <span class="s">r&#39;PARAMATER_ORDINAL_POSITION|PARAMETER_SPECIFIC_CATALOG|&#39;</span>
+             <span class="s">r&#39;PARAMETER_SPECIFIC_NAME|PARAMATER_SPECIFIC_SCHEMA|PARTIAL|&#39;</span>
+             <span class="s">r&#39;PASCAL|PENDANT|PLACING|PLI|POSITION|POSTFIX|PRECISION|PREFIX|&#39;</span>
+             <span class="s">r&#39;PREORDER|PREPARE|PRESERVE|PRIMARY|PRIOR|PRIVILEGES|PROCEDURAL|&#39;</span>
+             <span class="s">r&#39;PROCEDURE|PUBLIC|READ|READS|RECHECK|RECURSIVE|REF|REFERENCES|&#39;</span>
+             <span class="s">r&#39;REFERENCING|REINDEX|RELATIVE|RENAME|REPEATABLE|REPLACE|RESET|&#39;</span>
+             <span class="s">r&#39;RESTART|RESTRICT|RESULT|RETURN|RETURNED_LENGTH|&#39;</span>
+             <span class="s">r&#39;RETURNED_OCTET_LENGTH|RETURNED_SQLSTATE|RETURNS|REVOKE|RIGHT|&#39;</span>
+             <span class="s">r&#39;ROLE|ROLLBACK|ROLLUP|ROUTINE|ROUTINE_CATALOG|ROUTINE_NAME|&#39;</span>
+             <span class="s">r&#39;ROUTINE_SCHEMA|ROW|ROWS|ROW_COUNT|RULE|SAVE_POINT|SCALE|SCHEMA|&#39;</span>
+             <span class="s">r&#39;SCHEMA_NAME|SCOPE|SCROLL|SEARCH|SECOND|SECURITY|SELECT|SELF|&#39;</span>
+             <span class="s">r&#39;SENSITIVE|SERIALIZABLE|SERVER_NAME|SESSION|SESSION_USER|SET|&#39;</span>
+             <span class="s">r&#39;SETOF|SETS|SHARE|SHOW|SIMILAR|SIMPLE|SIZE|SOME|SOURCE|SPACE|&#39;</span>
+             <span class="s">r&#39;SPECIFIC|SPECIFICTYPE|SPECIFIC_NAME|SQL|SQLCODE|SQLERROR|&#39;</span>
+             <span class="s">r&#39;SQLEXCEPTION|SQLSTATE|SQLWARNINIG|STABLE|START|STATE|STATEMENT|&#39;</span>
+             <span class="s">r&#39;STATIC|STATISTICS|STDIN|STDOUT|STORAGE|STRICT|STRUCTURE|STYPE|&#39;</span>
+             <span class="s">r&#39;SUBCLASS_ORIGIN|SUBLIST|SUBSTRING|SUM|SYMMETRIC|SYSID|SYSTEM|&#39;</span>
+             <span class="s">r&#39;SYSTEM_USER|TABLE|TABLE_NAME| TEMP|TEMPLATE|TEMPORARY|TERMINATE|&#39;</span>
+             <span class="s">r&#39;THAN|THEN|TIMESTAMP|TIMEZONE_HOUR|TIMEZONE_MINUTE|TO|TOAST|&#39;</span>
+             <span class="s">r&#39;TRAILING|TRANSATION|TRANSACTIONS_COMMITTED|&#39;</span>
+             <span class="s">r&#39;TRANSACTIONS_ROLLED_BACK|TRANSATION_ACTIVE|TRANSFORM|&#39;</span>
+             <span class="s">r&#39;TRANSFORMS|TRANSLATE|TRANSLATION|TREAT|TRIGGER|TRIGGER_CATALOG|&#39;</span>
+             <span class="s">r&#39;TRIGGER_NAME|TRIGGER_SCHEMA|TRIM|TRUE|TRUNCATE|TRUSTED|TYPE|&#39;</span>
+             <span class="s">r&#39;UNCOMMITTED|UNDER|UNENCRYPTED|UNION|UNIQUE|UNKNOWN|UNLISTEN|&#39;</span>
+             <span class="s">r&#39;UNNAMED|UNNEST|UNTIL|UPDATE|UPPER|USAGE|USER|&#39;</span>
+             <span class="s">r&#39;USER_DEFINED_TYPE_CATALOG|USER_DEFINED_TYPE_NAME|&#39;</span>
+             <span class="s">r&#39;USER_DEFINED_TYPE_SCHEMA|USING|VACUUM|VALID|VALIDATOR|VALUES|&#39;</span>
+             <span class="s">r&#39;VARIABLE|VERBOSE|VERSION|VIEW|VOLATILE|WHEN|WHENEVER|WHERE|&#39;</span>
+             <span class="s">r&#39;WITH|WITHOUT|WORK|WRITE|YEAR|ZONE)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(ARRAY|BIGINT|BINARY|BIT|BLOB|BOOLEAN|CHAR|CHARACTER|DATE|&#39;</span>
+             <span class="s">r&#39;DEC|DECIMAL|FLOAT|INT|INTEGER|INTERVAL|NUMBER|NUMERIC|REAL|&#39;</span>
+             <span class="s">r&#39;SERIAL|SMALLINT|VARCHAR|VARYING|INT8|SERIAL8|TEXT)\b&#39;</span><span class="p">,</span>
+             <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[+*/&lt;&gt;=~!@#%^&amp;|`?-]&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[0-9]+&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="c"># TODO: Backslash escapes?</span>
+            <span class="p">(</span><span class="s">r&quot;&#39;(&#39;&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;&quot;(&quot;&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Symbol</span><span class="p">),</span> <span class="c"># not a real string literal in ANSI SQL</span>
+            <span class="p">(</span><span class="s">r&#39;[a-zA-Z_][a-zA-Z0-9_]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[;:()\[\],\.]&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;multiline-comments&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;/\*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;multiline-comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\*/&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[^/\*]+&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[/*]&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="MySqlLexer"><a class="viewcode-back" href="../../../lexers/sql.html#pygments.lexers.sql.MySqlLexer">[docs]</a><span class="k">class</span> <span class="nc">MySqlLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Special lexer for MySQL.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;MySQL&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mysql&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-mysql&#39;</span><span class="p">]</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(#|--\s+).*?\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;/\*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;multiline-comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[0-9]+&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[0-9]*\.[0-9]+(e[+-][0-9]+)&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Float</span><span class="p">),</span>
+            <span class="c"># TODO: add backslash escapes</span>
+            <span class="p">(</span><span class="s">r&quot;&#39;(&#39;&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;&quot;(&quot;&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Double</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&quot;`(``|[^`])*`&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Symbol</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[+*/&lt;&gt;=~!@#%^&amp;|`?-]&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\b(tinyint|smallint|mediumint|int|integer|bigint|date|&#39;</span>
+             <span class="s">r&#39;datetime|time|bit|bool|tinytext|mediumtext|longtext|text|&#39;</span>
+             <span class="s">r&#39;tinyblob|mediumblob|longblob|blob|float|double|double\s+&#39;</span>
+             <span class="s">r&#39;precision|real|numeric|dec|decimal|timestamp|year|char|&#39;</span>
+             <span class="s">r&#39;varchar|varbinary|varcharacter|enum|set)(\b\s*)(\()?&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;\b(add|all|alter|analyze|and|as|asc|asensitive|before|between|&#39;</span>
+             <span class="s">r&#39;bigint|binary|blob|both|by|call|cascade|case|change|char|&#39;</span>
+             <span class="s">r&#39;character|check|collate|column|condition|constraint|continue|&#39;</span>
+             <span class="s">r&#39;convert|create|cross|current_date|current_time|&#39;</span>
+             <span class="s">r&#39;current_timestamp|current_user|cursor|database|databases|&#39;</span>
+             <span class="s">r&#39;day_hour|day_microsecond|day_minute|day_second|dec|decimal|&#39;</span>
+             <span class="s">r&#39;declare|default|delayed|delete|desc|describe|deterministic|&#39;</span>
+             <span class="s">r&#39;distinct|distinctrow|div|double|drop|dual|each|else|elseif|&#39;</span>
+             <span class="s">r&#39;enclosed|escaped|exists|exit|explain|fetch|float|float4|float8&#39;</span>
+             <span class="s">r&#39;|for|force|foreign|from|fulltext|grant|group|having|&#39;</span>
+             <span class="s">r&#39;high_priority|hour_microsecond|hour_minute|hour_second|if|&#39;</span>
+             <span class="s">r&#39;ignore|in|index|infile|inner|inout|insensitive|insert|int|&#39;</span>
+             <span class="s">r&#39;int1|int2|int3|int4|int8|integer|interval|into|is|iterate|&#39;</span>
+             <span class="s">r&#39;join|key|keys|kill|leading|leave|left|like|limit|lines|load|&#39;</span>
+             <span class="s">r&#39;localtime|localtimestamp|lock|long|loop|low_priority|match|&#39;</span>
+             <span class="s">r&#39;minute_microsecond|minute_second|mod|modifies|natural|&#39;</span>
+             <span class="s">r&#39;no_write_to_binlog|not|numeric|on|optimize|option|optionally|&#39;</span>
+             <span class="s">r&#39;or|order|out|outer|outfile|precision|primary|procedure|purge|&#39;</span>
+             <span class="s">r&#39;raid0|read|reads|real|references|regexp|release|rename|repeat|&#39;</span>
+             <span class="s">r&#39;replace|require|restrict|return|revoke|right|rlike|schema|&#39;</span>
+             <span class="s">r&#39;schemas|second_microsecond|select|sensitive|separator|set|&#39;</span>
+             <span class="s">r&#39;show|smallint|soname|spatial|specific|sql|sql_big_result|&#39;</span>
+             <span class="s">r&#39;sql_calc_found_rows|sql_small_result|sqlexception|sqlstate|&#39;</span>
+             <span class="s">r&#39;sqlwarning|ssl|starting|straight_join|table|terminated|then|&#39;</span>
+             <span class="s">r&#39;to|trailing|trigger|undo|union|unique|unlock|unsigned|update|&#39;</span>
+             <span class="s">r&#39;usage|use|using|utc_date|utc_time|utc_timestamp|values|&#39;</span>
+             <span class="s">r&#39;varying|when|where|while|with|write|x509|xor|year_month|&#39;</span>
+             <span class="s">r&#39;zerofill)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="c"># TODO: this list is not complete</span>
+            <span class="p">(</span><span class="s">r&#39;\b(auto_increment|engine|charset|tables)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Pseudo</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(true|false|null)&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\()&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;[a-zA-Z_][a-zA-Z0-9_]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;@[A-Za-z0-9]*[._]*[A-Za-z0-9]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[;:()\[\],\.]&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;multiline-comments&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;/\*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;multiline-comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\*/&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[^/\*]+&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[/*]&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="SqliteConsoleLexer"><a class="viewcode-back" href="../../../lexers/sql.html#pygments.lexers.sql.SqliteConsoleLexer">[docs]</a><span class="k">class</span> <span class="nc">SqliteConsoleLexer</span><span class="p">(</span><span class="n">Lexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lexer for example sessions using sqlite3.</span>
+
+<span class="sd">    *New in Pygments 0.11.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;sqlite3con&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sqlite3&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.sqlite3-console&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-sqlite3-console&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_tokens_unprocessed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="n">SqlLexer</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="n">curcode</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">insertions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">line_re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;sqlite&gt; &#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;   ...&gt; &#39;</span><span class="p">):</span>
+                <span class="n">insertions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">curcode</span><span class="p">),</span>
+                                   <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Generic</span><span class="o">.</span><span class="n">Prompt</span><span class="p">,</span> <span class="n">line</span><span class="p">[:</span><span class="mi">8</span><span class="p">])]))</span>
+                <span class="n">curcode</span> <span class="o">+=</span> <span class="n">line</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">curcode</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">do_insertions</span><span class="p">(</span><span class="n">insertions</span><span class="p">,</span>
+                                              <span class="n">sql</span><span class="o">.</span><span class="n">get_tokens_unprocessed</span><span class="p">(</span><span class="n">curcode</span><span class="p">)):</span>
+                        <span class="k">yield</span> <span class="n">item</span>
+                    <span class="n">curcode</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                    <span class="n">insertions</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;SQL error: &#39;</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">Generic</span><span class="o">.</span><span class="n">Traceback</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">Generic</span><span class="o">.</span><span class="n">Output</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">curcode</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">do_insertions</span><span class="p">(</span><span class="n">insertions</span><span class="p">,</span>
+                                      <span class="n">sql</span><span class="o">.</span><span class="n">get_tokens_unprocessed</span><span class="p">(</span><span class="n">curcode</span><span class="p">)):</span>
+                <span class="k">yield</span> <span class="n">item</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" >pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

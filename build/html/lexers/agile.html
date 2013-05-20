@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.agile &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.lexers.agile"></span><div class="section" id="pygments-lexers-agile">
+<h1>pygments.lexers.agile<a class="headerlink" href="#pygments-lexers-agile" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for agile languages.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.agile.PythonLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">PythonLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#PythonLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.PythonLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://www.python.org">Python</a> source code.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.PythonConsoleLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">PythonConsoleLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#PythonConsoleLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.PythonConsoleLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Python console output or doctests, such as:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">a</span>
+<span class="go">foo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+<span class="gr">ZeroDivisionError</span>: <span class="n">integer division or modulo by zero</span>
+</pre></div>
+</div>
+<p>Additional options:</p>
+<dl class="docutils">
+<dt><cite>python3</cite></dt>
+<dd>Use Python 3 lexer for code.  Default is <tt class="docutils literal"><span class="pre">False</span></tt>.
+<em>New in Pygments 1.0.</em></dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.PythonTracebackLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">PythonTracebackLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#PythonTracebackLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.PythonTracebackLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Python tracebacks.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.Python3Lexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">Python3Lexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#Python3Lexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.Python3Lexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://www.python.org">Python</a> source code (version 3.0).</p>
+<p><em>New in Pygments 0.10.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.Python3TracebackLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">Python3TracebackLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#Python3TracebackLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.Python3TracebackLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Python 3.0 tracebacks, with support for chained exceptions.</p>
+<p><em>New in Pygments 1.0.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.RubyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">RubyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#RubyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.RubyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://www.ruby-lang.org">Ruby</a> source code.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.RubyConsoleLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">RubyConsoleLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#RubyConsoleLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.RubyConsoleLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Ruby interactive console (<strong>irb</strong>) output like:</p>
+<div class="highlight-rbcon"><div class="highlight"><pre><span class="gp">irb(main):001:0&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="go">=&gt; 1</span>
+<span class="gp">irb(main):002:0&gt; </span><span class="nb">puts</span> <span class="n">a</span>
+<span class="go">1</span>
+<span class="go">=&gt; nil</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.PerlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">PerlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#PerlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.PerlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://www.perl.org">Perl</a> source code.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.LuaLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">LuaLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#LuaLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.LuaLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://www.lua.org">Lua</a> source code.</p>
+<p>Additional options accepted:</p>
+<dl class="docutils">
+<dt><cite>func_name_highlighting</cite></dt>
+<dd>If given and <tt class="docutils literal"><span class="pre">True</span></tt>, highlight builtin function names
+(default: <tt class="docutils literal"><span class="pre">True</span></tt>).</dd>
+<dt><cite>disabled_modules</cite></dt>
+<dd><p class="first">If given, must be a list of module names whose function names
+should not be highlighted. By default all modules are highlighted.</p>
+<p>To get a list of allowed modules have a look into the
+<cite>_luabuiltins</cite> module:</p>
+<div class="last highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pygments.lexers._luabuiltins</span> <span class="kn">import</span> <span class="n">MODULES</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MODULES</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">[&#39;string&#39;, &#39;coroutine&#39;, &#39;modules&#39;, &#39;io&#39;, &#39;basic&#39;, ...]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.MoonScriptLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">MoonScriptLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#MoonScriptLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.MoonScriptLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://moonscript.org.org">MoonScript</a> source code.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.CrocLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">CrocLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#CrocLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.CrocLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://jfbillingsley.com/croc">Croc</a> source.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.MiniDLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">MiniDLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#MiniDLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.MiniDLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For MiniD source. MiniD is now known as Croc.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.IoLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">IoLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#IoLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.IoLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://iolanguage.com/">Io</a> (a small, prototype-based
+programming language) source.</p>
+<p><em>New in Pygments 0.10.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.TclLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">TclLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#TclLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.TclLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Tcl source code.</p>
+<p><em>New in Pygments 0.10.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.FactorLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">FactorLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#FactorLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.FactorLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for the <a class="reference external" href="http://factorcode.org">Factor</a> language.</p>
+<p><em>New in Pygments 1.4.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.FancyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">FancyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#FancyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.FancyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pygments Lexer For <a class="reference external" href="http://www.fancy-lang.org/">Fancy</a>.</p>
+<p>Fancy is a self-hosted, pure object-oriented, dynamic,
+class-based, concurrent general-purpose programming language
+running on Rubinius, the Ruby VM.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.agile.DgLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.agile.</tt><tt class="descname">DgLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/agile.html#DgLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.agile.DgLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://pyos.github.com/dg">dg</a>,
+a functional and object-oriented programming language
+running on the CPython 3 VM.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lexers/agile.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

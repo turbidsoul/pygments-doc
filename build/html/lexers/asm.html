@@ -1,0 +1,170 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.asm &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.lexers.asm"></span><div class="section" id="pygments-lexers-asm">
+<h1>pygments.lexers.asm<a class="headerlink" href="#pygments-lexers-asm" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for assembly languages.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.asm.GasLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">GasLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#GasLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.GasLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Gas (AT&amp;T) assembly code.</p>
+<dl class="attribute">
+<dt id="pygments.lexers.asm.GasLexer.string">
+<tt class="descname">string</tt><em class="property"> = '&quot;(\\\\&quot;|[^&quot;])*&quot;'</em><a class="headerlink" href="#pygments.lexers.asm.GasLexer.string" title="Permalink to this definition">¶</a></dt>
+<dd><p>optional Comment or Whitespace</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.asm.ObjdumpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">ObjdumpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#ObjdumpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.ObjdumpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the output of &#8216;objdump -dr&#8217;</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.asm.DObjdumpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">DObjdumpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#DObjdumpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.DObjdumpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the output of &#8216;objdump -Sr on compiled D files&#8217;</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.asm.CppObjdumpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">CppObjdumpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#CppObjdumpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.CppObjdumpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the output of &#8216;objdump -Sr on compiled C++ files&#8217;</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.asm.CObjdumpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">CObjdumpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#CObjdumpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.CObjdumpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the output of &#8216;objdump -Sr on compiled C files&#8217;</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.asm.LlvmLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">LlvmLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#LlvmLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.LlvmLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For LLVM assembly code.</p>
+<dl class="attribute">
+<dt id="pygments.lexers.asm.LlvmLexer.string">
+<tt class="descname">string</tt><em class="property"> = '&quot;[^&quot;]*?&quot;'</em><a class="headerlink" href="#pygments.lexers.asm.LlvmLexer.string" title="Permalink to this definition">¶</a></dt>
+<dd><p>optional Comment or Whitespace</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.asm.NasmLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">NasmLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#NasmLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.NasmLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Nasm (Intel) assembly code.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.asm.Ca65Lexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.asm.</tt><tt class="descname">Ca65Lexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/asm.html#Ca65Lexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.asm.Ca65Lexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For ca65 assembler sources.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lexers/asm.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

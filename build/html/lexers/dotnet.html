@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.dotnet &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.lexers.dotnet"></span><div class="section" id="pygments-lexers-dotnet">
+<h1>pygments.lexers.dotnet<a class="headerlink" href="#pygments-lexers-dotnet" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for .net languages.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.dotnet.CSharpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.dotnet.</tt><tt class="descname">CSharpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/dotnet.html#CSharpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.dotnet.CSharpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://msdn2.microsoft.com/en-us/vcsharp/default.aspx">C#</a>
+source code.</p>
+<p>Additional options accepted:</p>
+<dl class="docutils">
+<dt><cite>unicodelevel</cite></dt>
+<dd><p class="first">Determines which Unicode characters this lexer allows for identifiers.
+The possible values are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">none</span></tt> &#8211; only the ASCII letters and numbers are allowed. This
+is the fastest selection.</li>
+<li><tt class="docutils literal"><span class="pre">basic</span></tt> &#8211; all Unicode characters from the specification except
+category <tt class="docutils literal"><span class="pre">Lo</span></tt> are allowed.</li>
+<li><tt class="docutils literal"><span class="pre">full</span></tt> &#8211; all Unicode characters as specified in the C# specs
+are allowed.  Note that this means a considerable slowdown since the
+<tt class="docutils literal"><span class="pre">Lo</span></tt> category has more than 40,000 characters in it!</li>
+</ul>
+<p>The default value is <tt class="docutils literal"><span class="pre">basic</span></tt>.</p>
+<p class="last"><em>New in Pygments 0.8.</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.dotnet.NemerleLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.dotnet.</tt><tt class="descname">NemerleLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/dotnet.html#NemerleLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.dotnet.NemerleLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://nemerle.org">Nemerle</a> source code.</p>
+<p>Additional options accepted:</p>
+<dl class="docutils">
+<dt><cite>unicodelevel</cite></dt>
+<dd><p class="first">Determines which Unicode characters this lexer allows for identifiers.
+The possible values are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">none</span></tt> &#8211; only the ASCII letters and numbers are allowed. This
+is the fastest selection.</li>
+<li><tt class="docutils literal"><span class="pre">basic</span></tt> &#8211; all Unicode characters from the specification except
+category <tt class="docutils literal"><span class="pre">Lo</span></tt> are allowed.</li>
+<li><tt class="docutils literal"><span class="pre">full</span></tt> &#8211; all Unicode characters as specified in the C# specs
+are allowed.  Note that this means a considerable slowdown since the
+<tt class="docutils literal"><span class="pre">Lo</span></tt> category has more than 40,000 characters in it!</li>
+</ul>
+<p class="last">The default value is <tt class="docutils literal"><span class="pre">basic</span></tt>.</p>
+</dd>
+</dl>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.dotnet.BooLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.dotnet.</tt><tt class="descname">BooLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/dotnet.html#BooLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.dotnet.BooLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://boo.codehaus.org/">Boo</a> source code.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.dotnet.VbNetLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.dotnet.</tt><tt class="descname">VbNetLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/dotnet.html#VbNetLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.dotnet.VbNetLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For
+<a class="reference external" href="http://msdn2.microsoft.com/en-us/vbasic/default.aspx">Visual Basic.NET</a>
+source code.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.dotnet.CSharpAspxLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.dotnet.</tt><tt class="descname">CSharpAspxLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/dotnet.html#CSharpAspxLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.dotnet.CSharpAspxLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for highligting C# within ASP.NET pages.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.dotnet.VbNetAspxLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.dotnet.</tt><tt class="descname">VbNetAspxLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/dotnet.html#VbNetAspxLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.dotnet.VbNetAspxLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for highligting Visual Basic.net within ASP.NET pages.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.dotnet.FSharpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.dotnet.</tt><tt class="descname">FSharpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/dotnet.html#FSharpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.dotnet.FSharpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the F# language.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lexers/dotnet.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

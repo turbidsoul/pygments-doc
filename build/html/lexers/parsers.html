@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.parsers &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.lexers.parsers"></span><div class="section" id="pygments-lexers-parsers">
+<h1>pygments.lexers.parsers<a class="headerlink" href="#pygments-lexers-parsers" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for parser generators.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pure <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> lexer.  Use this for
+fragments of Ragel.  For <tt class="docutils literal"><span class="pre">.rl</span></tt> files, use RagelEmbeddedLexer instead
+(or one of the language-specific subclasses).</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelEmbeddedLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelEmbeddedLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelEmbeddedLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelEmbeddedLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> embedded in a host language file.</p>
+<p>This will only highlight Ragel statements. If you want host language
+highlighting then call the language-specific Ragel lexer.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelCLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelCLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelCLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelCLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> in a C host file.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelDLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelDLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelDLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelDLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> in a D host file.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelCppLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelCppLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelCppLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelCppLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> in a CPP host file.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelObjectiveCLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelObjectiveCLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelObjectiveCLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelObjectiveCLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> in an Objective C host file.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelRubyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelRubyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelRubyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelRubyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> in a Ruby host file.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.RagelJavaLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">RagelJavaLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#RagelJavaLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.RagelJavaLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://www.complang.org/ragel/">Ragel</a> in a Java host file.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic <a class="reference external" href="http://www.antlr.org/">ANTLR</a> Lexer.
+Should not be called directly, instead
+use DelegatingLexer for your target language.</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrPythonLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrPythonLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrPythonLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrPythonLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with Python Target</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrPerlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrPerlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrPerlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrPerlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with Perl Target</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrRubyLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrRubyLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrRubyLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrRubyLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with Ruby Target</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrCppLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrCppLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrCppLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrCppLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with CPP Target</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrCSharpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrCSharpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrCSharpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrCSharpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with C# Target</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrObjectiveCLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrObjectiveCLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrObjectiveCLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrObjectiveCLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with Objective-C Target</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrJavaLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrJavaLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrJavaLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrJavaLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with Java Target</p>
+<p><em>New in Pygments 1.1</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.AntlrActionScriptLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">AntlrActionScriptLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#AntlrActionScriptLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.AntlrActionScriptLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://www.antlr.org/">ANTLR</a> with ActionScript Target</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.parsers.TreetopLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.parsers.</tt><tt class="descname">TreetopLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/parsers.html#TreetopLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.parsers.TreetopLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer for <a class="reference external" href="http://treetop.rubyforge.org/">Treetop</a> grammars.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lexers/parsers.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

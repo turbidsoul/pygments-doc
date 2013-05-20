@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.text &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.lexers.text"></span><div class="section" id="pygments-lexers-text">
+<h1>pygments.lexers.text<a class="headerlink" href="#pygments-lexers-text" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for non-source code file types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.text.IniLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">IniLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#IniLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.IniLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for configuration files in INI style.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.PropertiesLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">PropertiesLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#PropertiesLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.PropertiesLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for configuration files in Java&#8217;s properties format.</p>
+<p><em>New in Pygments 1.4.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.SourcesListLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">SourcesListLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#SourcesListLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.SourcesListLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer that highlights debian sources.list files.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.BaseMakefileLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">BaseMakefileLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#BaseMakefileLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.BaseMakefileLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for simple Makefiles (no preprocessing).</p>
+<p><em>New in Pygments 0.10.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.MakefileLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">MakefileLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#MakefileLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.MakefileLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for BSD and GNU make extensions (lenient enough to handle both in
+the same file even).</p>
+<p><em>Rewritten in Pygments 0.10.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.DiffLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">DiffLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#DiffLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.DiffLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for unified or context-style diffs or patches.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.IrcLogsLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">IrcLogsLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#IrcLogsLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.IrcLogsLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for IRC logs in <em>irssi</em>, <em>xchat</em> or <em>weechat</em> style.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.TexLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">TexLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#TexLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.TexLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for the TeX and LaTeX typesetting languages.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.GroffLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">GroffLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#GroffLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.GroffLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for the (g)roff typesetting language, supporting groff
+extensions. Mainly useful for highlighting manpage sources.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.ApacheConfLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">ApacheConfLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#ApacheConfLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.ApacheConfLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for configuration files following the Apache config file
+format.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.BBCodeLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">BBCodeLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#BBCodeLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.BBCodeLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lexer that highlights BBCode(-like) syntax.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.MoinWikiLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">MoinWikiLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#MoinWikiLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.MoinWikiLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For MoinMoin (and Trac) Wiki markup.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.RstLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">RstLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#RstLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.RstLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="http://docutils.sf.net/rst.html">reStructuredText</a> markup.</p>
+<p><em>New in Pygments 0.7.</em></p>
+<p>Additional options accepted:</p>
+<dl class="docutils">
+<dt><cite>handlecodeblocks</cite></dt>
+<dd>Highlight the contents of <tt class="docutils literal"><span class="pre">..</span> <span class="pre">sourcecode::</span> <span class="pre">langauge</span></tt> and
+<tt class="docutils literal"><span class="pre">..</span> <span class="pre">code::</span> <span class="pre">language</span></tt> directives with a lexer for the given
+language (default: <tt class="docutils literal"><span class="pre">True</span></tt>). <em>New in Pygments 0.8.</em></dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.VimLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">VimLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#VimLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.VimLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for VimL script files.</p>
+<p><em>New in Pygments 0.8.</em></p>
+<dl class="method">
+<dt id="pygments.lexers.text.VimLexer.is_in">
+<tt class="descname">is_in</tt><big>(</big><em>w</em>, <em>mapping</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#VimLexer.is_in"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.VimLexer.is_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>It&#8217;s kind of difficult to decide if something might be a keyword
+in VimL because it allows you to abbreviate them.  In fact,
+&#8216;ab[breviate]&#8217; is a good example.  :ab, :abbre, or :abbreviate are
+valid ways to call it so rather than making really awful regexps
+like:</p>
+<div class="highlight-python"><pre>\bab(?:b(?:r(?:e(?:v(?:i(?:a(?:t(?:e)?)?)?)?)?)?)?)?\b</pre>
+</div>
+<p>we match <cite>bw+b</cite> and then call is_in() on those tokens.  See
+<cite>scripts/get_vimkw.py</cite> for how the lists are extracted.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.GettextLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">GettextLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#GettextLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.GettextLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for Gettext catalog files.</p>
+<p><em>New in Pygments 0.9.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.SquidConfLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">SquidConfLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#SquidConfLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.SquidConfLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://www.squid-cache.org/">squid</a> configuration files.</p>
+<p><em>New in Pygments 0.9.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.DebianControlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">DebianControlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#DebianControlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.DebianControlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for Debian <tt class="docutils literal"><span class="pre">control</span></tt> files and <tt class="docutils literal"><span class="pre">apt-cache</span> <span class="pre">show</span> <span class="pre">&lt;pkg&gt;</span></tt> outputs.</p>
+<p><em>New in Pygments 0.9.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.DarcsPatchLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">DarcsPatchLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#DarcsPatchLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.DarcsPatchLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>DarcsPatchLexer is a lexer for the various versions of the darcs patch
+format.  Examples of this format are derived by commands such as
+<tt class="docutils literal"><span class="pre">darcs</span> <span class="pre">annotate</span> <span class="pre">--patch</span></tt> and <tt class="docutils literal"><span class="pre">darcs</span> <span class="pre">send</span></tt>.</p>
+<p><em>New in Pygments 0.10.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.YamlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">YamlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://yaml.org/">YAML</a>, a human-friendly data serialization
+language.</p>
+<p><em>New in Pygments 0.11.</em></p>
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.parse_block_scalar_empty_line">
+<tt class="descname">parse_block_scalar_empty_line</tt><big>(</big><em>indent_token_class</em>, <em>content_token_class</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.parse_block_scalar_empty_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.parse_block_scalar_empty_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process an empty line in a block scalar.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.parse_block_scalar_indent">
+<tt class="descname">parse_block_scalar_indent</tt><big>(</big><em>token_class</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.parse_block_scalar_indent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.parse_block_scalar_indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process indentation spaces in a block scalar.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.parse_plain_scalar_indent">
+<tt class="descname">parse_plain_scalar_indent</tt><big>(</big><em>token_class</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.parse_plain_scalar_indent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.parse_plain_scalar_indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process indentation spaces in a plain scalar.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.reset_indent">
+<tt class="descname">reset_indent</tt><big>(</big><em>token_class</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.reset_indent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.reset_indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the indentation levels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.save_indent">
+<tt class="descname">save_indent</tt><big>(</big><em>token_class</em>, <em>start=False</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.save_indent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.save_indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a possible indentation level.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.set_block_scalar_indent">
+<tt class="descname">set_block_scalar_indent</tt><big>(</big><em>token_class</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.set_block_scalar_indent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.set_block_scalar_indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an explicit indentation level for a block scalar.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.set_indent">
+<tt class="descname">set_indent</tt><big>(</big><em>token_class</em>, <em>implicit=False</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.set_indent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.set_indent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the previously saved indentation level.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.lexers.text.YamlLexer.something">
+<tt class="descname">something</tt><big>(</big><em>token_class</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#YamlLexer.something"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.YamlLexer.something" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do not produce empty tokens.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.LighttpdConfLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">LighttpdConfLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#LighttpdConfLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.LighttpdConfLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://lighttpd.net/">Lighttpd</a> configuration files.</p>
+<p><em>New in Pygments 0.11.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.NginxConfLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">NginxConfLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#NginxConfLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.NginxConfLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://nginx.net/">Nginx</a> configuration files.</p>
+<p><em>New in Pygments 0.11.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.CMakeLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">CMakeLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#CMakeLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.CMakeLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://cmake.org/Wiki/CMake">CMake</a> files.</p>
+<p><em>New in Pygments 1.2.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.HttpLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">HttpLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#HttpLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.HttpLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for HTTP sessions.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.PyPyLogLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">PyPyLogLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#PyPyLogLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.PyPyLogLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for PyPy log files.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.RegeditLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">RegeditLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#RegeditLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.RegeditLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://en.wikipedia.org/wiki/Windows_Registry#.REG_files">Windows Registry</a> files produced
+by regedit.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.text.HxmlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.text.</tt><tt class="descname">HxmlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/text.html#HxmlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.text.HxmlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://haxe.org/doc/compiler">haXe build</a> files.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lexers/text.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

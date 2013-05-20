@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.asm &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.lexers" href="../lexers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" accesskey="U">pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.lexers.asm</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.lexers.asm</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Lexers for assembly languages.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">pygments.lexer</span> <span class="kn">import</span> <span class="n">RegexLexer</span><span class="p">,</span> <span class="n">include</span><span class="p">,</span> <span class="n">bygroups</span><span class="p">,</span> <span class="n">using</span><span class="p">,</span> <span class="n">DelegatingLexer</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers.compiled</span> <span class="kn">import</span> <span class="n">DLexer</span><span class="p">,</span> <span class="n">CppLexer</span><span class="p">,</span> <span class="n">CLexer</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> \
+     <span class="n">Other</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Operator</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;GasLexer&#39;</span><span class="p">,</span> <span class="s">&#39;ObjdumpLexer&#39;</span><span class="p">,</span><span class="s">&#39;DObjdumpLexer&#39;</span><span class="p">,</span> <span class="s">&#39;CppObjdumpLexer&#39;</span><span class="p">,</span>
+           <span class="s">&#39;CObjdumpLexer&#39;</span><span class="p">,</span> <span class="s">&#39;LlvmLexer&#39;</span><span class="p">,</span> <span class="s">&#39;NasmLexer&#39;</span><span class="p">,</span> <span class="s">&#39;Ca65Lexer&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="GasLexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.GasLexer">[docs]</a><span class="k">class</span> <span class="nc">GasLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For Gas (AT&amp;T) assembly code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;GAS&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;gas&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.s&#39;</span><span class="p">,</span> <span class="s">&#39;*.S&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-gas&#39;</span><span class="p">]</span>
+
+    <span class="c">#: optional Comment or Whitespace</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="s">r&#39;&quot;(</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span>
+    <span class="n">char</span> <span class="o">=</span> <span class="s">r&#39;[a-zA-Z$._0-9@-]&#39;</span>
+    <span class="n">identifier</span> <span class="o">=</span> <span class="s">r&#39;(?:[a-zA-Z$_]&#39;</span> <span class="o">+</span> <span class="n">char</span> <span class="o">+</span> <span class="s">&#39;*|\.&#39;</span> <span class="o">+</span> <span class="n">char</span> <span class="o">+</span> <span class="s">&#39;+)&#39;</span>
+    <span class="n">number</span> <span class="o">=</span> <span class="s">r&#39;(?:0[xX][a-zA-Z0-9]+|\d+)&#39;</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">identifier</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\.&#39;</span> <span class="o">+</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">,</span> <span class="s">&#39;directive-args&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;lock|rep(n?z)?|data\d+&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="s">&#39;instruction-args&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[\r\n]+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;directive-args&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;@&#39;</span> <span class="o">+</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[\r\n]+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;#.*?$&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;punctuation&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;instruction-args&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="c"># For objdump-disassembled code, shouldn&#39;t occur in</span>
+            <span class="c"># actual assembler input</span>
+            <span class="p">(</span><span class="s">&#39;([a-z0-9]+)( )(&lt;)(&#39;</span><span class="o">+</span><span class="n">identifier</span><span class="o">+</span><span class="s">&#39;)(&gt;)&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span>
+                         <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">&#39;([a-z0-9]+)( )(&lt;)(&#39;</span><span class="o">+</span><span class="n">identifier</span><span class="o">+</span><span class="s">&#39;)([-+])(&#39;</span><span class="o">+</span><span class="n">number</span><span class="o">+</span><span class="s">&#39;)(&gt;)&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span>
+                         <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+
+            <span class="c"># Address constants</span>
+            <span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="c"># Registers</span>
+            <span class="p">(</span><span class="s">&#39;%&#39;</span> <span class="o">+</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+            <span class="c"># Numeric constants</span>
+            <span class="p">(</span><span class="s">&#39;$&#39;</span><span class="o">+</span><span class="n">number</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&quot;$&#39;(.|</span><span class="se">\\</span><span class="s">&#39;)&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Char</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[\r\n]+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;#.*?$&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;punctuation&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;whitespace&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\n&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;#.*?\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;punctuation&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;[-*,.():]+&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^\.(text|data|section)&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^\.\w+&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mf">0.1</span>
+
+</div>
+<div class="viewcode-block" id="ObjdumpLexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.ObjdumpLexer">[docs]</a><span class="k">class</span> <span class="nc">ObjdumpLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For the output of &#39;objdump -dr&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;objdump&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;objdump&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.objdump&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-objdump&#39;</span><span class="p">]</span>
+
+    <span class="nb">hex</span> <span class="o">=</span> <span class="s">r&#39;[0-9A-Za-z]&#39;</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="c"># File name &amp; format:</span>
+            <span class="p">(</span><span class="s">&#39;(.*?)(:)( +file format )(.*?)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">String</span><span class="p">)),</span>
+            <span class="c"># Section header</span>
+            <span class="p">(</span><span class="s">&#39;(Disassembly of section )(.*?)(:)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="c"># Function labels</span>
+            <span class="c"># (With offset)</span>
+            <span class="p">(</span><span class="s">&#39;(&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">&#39;+)( )(&lt;)(.*?)([-+])(0[xX][A-Za-z0-9]+)(&gt;:)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+                         <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="c"># (Without offset)</span>
+            <span class="p">(</span><span class="s">&#39;(&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">&#39;+)( )(&lt;)(.*?)(&gt;:)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+                         <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="c"># Code line with disassembled instructions</span>
+            <span class="p">(</span><span class="s">&#39;( *)(&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">r&#39;+:)(\t)((?:&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">&#39; )+)( *</span><span class="se">\t</span><span class="s">)([a-zA-Z].*?)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span>
+                         <span class="n">using</span><span class="p">(</span><span class="n">GasLexer</span><span class="p">))),</span>
+            <span class="c"># Code line with ascii</span>
+            <span class="p">(</span><span class="s">&#39;( *)(&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">r&#39;+:)(\t)((?:&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">&#39; )+)( *)(.*?)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">String</span><span class="p">)),</span>
+            <span class="c"># Continued code line, only raw opcodes without disassembled</span>
+            <span class="c"># instruction</span>
+            <span class="p">(</span><span class="s">&#39;( *)(&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">r&#39;+:)(\t)((?:&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">&#39; )+)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">)),</span>
+            <span class="c"># Skipped a few bytes</span>
+            <span class="p">(</span><span class="s">r&#39;\t\.\.\.$&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="c"># Relocation line</span>
+            <span class="c"># (With offset)</span>
+            <span class="p">(</span><span class="s">r&#39;(\t\t\t)(&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">r&#39;+:)( )([^\t]+)(\t)(.*?)([-+])(0x&#39;</span> <span class="o">+</span> <span class="nb">hex</span> <span class="o">+</span> <span class="s">&#39;+)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Property</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span>
+                         <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">)),</span>
+            <span class="c"># (Without offset)</span>
+            <span class="p">(</span><span class="s">r&#39;(\t\t\t)(&#39;</span><span class="o">+</span><span class="nb">hex</span><span class="o">+</span><span class="s">r&#39;+:)( )([^\t]+)(\t)(.*?)$&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Property</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span>
+                         <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;[^\n]+\n&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="DObjdumpLexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.DObjdumpLexer">[docs]</a><span class="k">class</span> <span class="nc">DObjdumpLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For the output of &#39;objdump -Sr on compiled D files&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;d-objdump&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;d-objdump&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.d-objdump&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-d-objdump&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DObjdumpLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">DLexer</span><span class="p">,</span> <span class="n">ObjdumpLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CppObjdumpLexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.CppObjdumpLexer">[docs]</a><span class="k">class</span> <span class="nc">CppObjdumpLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For the output of &#39;objdump -Sr on compiled C++ files&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;cpp-objdump&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;cpp-objdump&#39;</span><span class="p">,</span> <span class="s">&#39;c++-objdumb&#39;</span><span class="p">,</span> <span class="s">&#39;cxx-objdump&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.cpp-objdump&#39;</span><span class="p">,</span> <span class="s">&#39;*.c++-objdump&#39;</span><span class="p">,</span> <span class="s">&#39;*.cxx-objdump&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-cpp-objdump&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CppObjdumpLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">CppLexer</span><span class="p">,</span> <span class="n">ObjdumpLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CObjdumpLexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.CObjdumpLexer">[docs]</a><span class="k">class</span> <span class="nc">CObjdumpLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For the output of &#39;objdump -Sr on compiled C files&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;c-objdump&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;c-objdump&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.c-objdump&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-c-objdump&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CObjdumpLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">CLexer</span><span class="p">,</span> <span class="n">ObjdumpLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="LlvmLexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.LlvmLexer">[docs]</a><span class="k">class</span> <span class="nc">LlvmLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For LLVM assembly code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;LLVM&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;llvm&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.ll&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-llvm&#39;</span><span class="p">]</span>
+
+    <span class="c">#: optional Comment or Whitespace</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="s">r&#39;&quot;[^&quot;]*?&quot;&#39;</span>
+    <span class="n">identifier</span> <span class="o">=</span> <span class="s">r&#39;([-a-zA-Z$._][-a-zA-Z$._0-9]*|&#39;</span> <span class="o">+</span> <span class="n">string</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+
+            <span class="c"># Before keywords, because keywords are valid label names :(...</span>
+            <span class="p">(</span><span class="n">identifier</span> <span class="o">+</span> <span class="s">&#39;\s*:&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">),</span>
+
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;keyword&#39;</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;%&#39;</span> <span class="o">+</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span><span class="c">#Name.Identifier.Local),</span>
+            <span class="p">(</span><span class="s">r&#39;@&#39;</span> <span class="o">+</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">Global</span><span class="p">),</span><span class="c">#Name.Identifier.Global),</span>
+            <span class="p">(</span><span class="s">r&#39;%\d+&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">Anonymous</span><span class="p">),</span><span class="c">#Name.Identifier.Anonymous),</span>
+            <span class="p">(</span><span class="s">r&#39;@\d+&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">Global</span><span class="p">),</span><span class="c">#Name.Identifier.Anonymous),</span>
+            <span class="p">(</span><span class="s">r&#39;!&#39;</span> <span class="o">+</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;!\d+&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">Anonymous</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;c?&#39;</span> <span class="o">+</span> <span class="n">string</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;0[xX][a-fA-F0-9]+&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;-?\d+(?:[.]\d+)?(?:[eE][-+]?\d+(?:[.]\d+)?)?&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;[=&lt;&gt;{}\[\]()*.,!]|x\b&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;whitespace&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(\n|\s)+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;;.*?\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;keyword&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="c"># Regular keywords</span>
+            <span class="p">(</span><span class="s">r&#39;(begin|end&#39;</span>
+             <span class="s">r&#39;|true|false&#39;</span>
+             <span class="s">r&#39;|declare|define&#39;</span>
+             <span class="s">r&#39;|global|constant&#39;</span>
+
+             <span class="s">r&#39;|private|linker_private|internal|available_externally|linkonce&#39;</span>
+             <span class="s">r&#39;|linkonce_odr|weak|weak_odr|appending|dllimport|dllexport&#39;</span>
+             <span class="s">r&#39;|common|default|hidden|protected|extern_weak|external&#39;</span>
+             <span class="s">r&#39;|thread_local|zeroinitializer|undef|null|to|tail|target|triple&#39;</span>
+             <span class="s">r&#39;|datalayout|volatile|nuw|nsw|nnan|ninf|nsz|arcp|fast|exact|inbounds&#39;</span>
+             <span class="s">r&#39;|align|addrspace|section|alias|module|asm|sideeffect|gc|dbg&#39;</span>
+
+             <span class="s">r&#39;|ccc|fastcc|coldcc|x86_stdcallcc|x86_fastcallcc|arm_apcscc&#39;</span>
+             <span class="s">r&#39;|arm_aapcscc|arm_aapcs_vfpcc&#39;</span>
+
+             <span class="s">r&#39;|cc|c&#39;</span>
+
+             <span class="s">r&#39;|signext|zeroext|inreg|sret|nounwind|noreturn|noalias|nocapture&#39;</span>
+             <span class="s">r&#39;|byval|nest|readnone|readonly&#39;</span>
+
+             <span class="s">r&#39;|inlinehint|noinline|alwaysinline|optsize|ssp|sspreq|noredzone&#39;</span>
+             <span class="s">r&#39;|noimplicitfloat|naked&#39;</span>
+
+             <span class="s">r&#39;|type|opaque&#39;</span>
+
+             <span class="s">r&#39;|eq|ne|slt|sgt|sle&#39;</span>
+             <span class="s">r&#39;|sge|ult|ugt|ule|uge&#39;</span>
+             <span class="s">r&#39;|oeq|one|olt|ogt|ole&#39;</span>
+             <span class="s">r&#39;|oge|ord|uno|ueq|une&#39;</span>
+             <span class="s">r&#39;|x&#39;</span>
+
+             <span class="c"># instructions</span>
+             <span class="s">r&#39;|add|fadd|sub|fsub|mul|fmul|udiv|sdiv|fdiv|urem|srem|frem|shl&#39;</span>
+             <span class="s">r&#39;|lshr|ashr|and|or|xor|icmp|fcmp&#39;</span>
+
+             <span class="s">r&#39;|phi|call|trunc|zext|sext|fptrunc|fpext|uitofp|sitofp|fptoui&#39;</span>
+             <span class="s">r&#39;fptosi|inttoptr|ptrtoint|bitcast|select|va_arg|ret|br|switch&#39;</span>
+             <span class="s">r&#39;|invoke|unwind|unreachable&#39;</span>
+
+             <span class="s">r&#39;|malloc|alloca|free|load|store|getelementptr&#39;</span>
+
+             <span class="s">r&#39;|extractelement|insertelement|shufflevector|getresult&#39;</span>
+             <span class="s">r&#39;|extractvalue|insertvalue&#39;</span>
+
+             <span class="s">r&#39;)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+
+            <span class="c"># Types</span>
+            <span class="p">(</span><span class="s">r&#39;void|float|double|x86_fp80|fp128|ppc_fp128|label|metadata&#39;</span><span class="p">,</span>
+             <span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">),</span>
+
+            <span class="c"># Integer types</span>
+            <span class="p">(</span><span class="s">r&#39;i[1-9]\d*&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="NasmLexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.NasmLexer">[docs]</a><span class="k">class</span> <span class="nc">NasmLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For Nasm (Intel) assembly code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;NASM&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nasm&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.asm&#39;</span><span class="p">,</span> <span class="s">&#39;*.ASM&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/x-nasm&#39;</span><span class="p">]</span>
+
+    <span class="n">identifier</span> <span class="o">=</span> <span class="s">r&#39;[a-zA-Z$._?][a-zA-Z0-9$._?#@~]*&#39;</span>
+    <span class="n">hexn</span> <span class="o">=</span> <span class="s">r&#39;(?:0[xX][0-9a-fA-F]+|$0[0-9a-fA-F]*|[0-9]+[0-9a-fA-F]*h)&#39;</span>
+    <span class="n">octn</span> <span class="o">=</span> <span class="s">r&#39;[0-7]+q&#39;</span>
+    <span class="n">binn</span> <span class="o">=</span> <span class="s">r&#39;[01]+b&#39;</span>
+    <span class="n">decn</span> <span class="o">=</span> <span class="s">r&#39;[0-9]+&#39;</span>
+    <span class="n">floatn</span> <span class="o">=</span> <span class="n">decn</span> <span class="o">+</span> <span class="s">r&#39;\.e?&#39;</span> <span class="o">+</span> <span class="n">decn</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="s">r&#39;&quot;(</span><span class="se">\\</span><span class="s">&quot;|[^&quot;\n])*&quot;|&#39;</span> <span class="o">+</span> <span class="s">r&quot;&#39;(</span><span class="se">\\</span><span class="s">&#39;|[^&#39;\n])*&#39;|&quot;</span> <span class="o">+</span> <span class="s">r&quot;`(</span><span class="se">\\</span><span class="s">`|[^`\n])*`&quot;</span>
+    <span class="n">declkw</span> <span class="o">=</span> <span class="s">r&#39;(?:res|d)[bwdqt]|times&#39;</span>
+    <span class="n">register</span> <span class="o">=</span> <span class="p">(</span><span class="s">r&#39;r[0-9][0-5]?[bwd]|&#39;</span>
+                <span class="s">r&#39;[a-d][lh]|[er]?[a-d]x|[er]?[sb]p|[er]?[sd]i|[c-gs]s|st[0-7]|&#39;</span>
+                <span class="s">r&#39;mm[0-7]|cr[0-4]|dr[0-367]|tr[3-7]&#39;</span><span class="p">)</span>
+    <span class="n">wordop</span> <span class="o">=</span> <span class="s">r&#39;seg|wrt|strict&#39;</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="s">r&#39;byte|[dq]?word&#39;</span>
+    <span class="n">directives</span> <span class="o">=</span> <span class="p">(</span><span class="s">r&#39;BITS|USE16|USE32|SECTION|SEGMENT|ABSOLUTE|EXTERN|GLOBAL|&#39;</span>
+                  <span class="s">r&#39;ORG|ALIGN|STRUC|ENDSTRUC|COMMON|CPU|GROUP|UPPERCASE|IMPORT|&#39;</span>
+                  <span class="s">r&#39;EXPORT|LIBRARY|MODULE&#39;</span><span class="p">)</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;^\s*%&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">,</span> <span class="s">&#39;preproc&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">identifier</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(</span><span class="si">%s</span><span class="s">)(\s+)(equ)&#39;</span> <span class="o">%</span> <span class="n">identifier</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Declaration</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Declaration</span><span class="p">),</span>
+                <span class="s">&#39;instruction-args&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">directives</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;instruction-args&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">declkw</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Declaration</span><span class="p">,</span> <span class="s">&#39;instruction-args&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="s">&#39;instruction-args&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[\r\n]+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;instruction-args&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">hexn</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">octn</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Oct</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">binn</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">floatn</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Float</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">decn</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;punctuation&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">register</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[\r\n]+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;preproc&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;[^;\n]+&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;;.*?\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;whitespace&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\n&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[ \t]+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;;.*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;punctuation&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;[,():\[\]]+&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[&amp;|^&lt;&gt;+*/%~-]+&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[$]+&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">wordop</span><span class="p">,</span> <span class="n">Operator</span><span class="o">.</span><span class="n">Word</span><span class="p">),</span>
+            <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="Ca65Lexer"><a class="viewcode-back" href="../../../lexers/asm.html#pygments.lexers.asm.Ca65Lexer">[docs]</a><span class="k">class</span> <span class="nc">Ca65Lexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For ca65 assembler sources.</span>
+
+<span class="sd">    *New in Pygments 1.6.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ca65&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ca65&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.s&#39;</span><span class="p">]</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;;.*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[a-z_.@$][\w.@$]*:&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;((ld|st)[axy]|(in|de)[cxy]|asl|lsr|ro[lr]|adc|sbc|cmp|cp[xy]&#39;</span>
+             <span class="s">r&#39;|cl[cvdi]|se[cdi]|jmp|jsr|bne|beq|bpl|bmi|bvc|bvs|bcc|bcs&#39;</span>
+             <span class="s">r&#39;|p[lh][ap]|rt[is]|brk|nop|ta[xy]|t[xy]a|txs|tsx|and|ora|eor&#39;</span>
+             <span class="s">r&#39;|bit)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\.[a-z0-9_]+&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Pseudo</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[-+~*/^&amp;|!&lt;&gt;=]&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;&quot;[^&quot;\n]*.&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&quot;&#39;[^&#39;\n]*.&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Char</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\$[0-9a-f]+|[0-9a-f]+h\b&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\d+|%[01]+&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[#,.:()=]&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[a-z_.@$][\w.@$]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="c"># comments in GAS start with &quot;#&quot;</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mf">0.9</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" >pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

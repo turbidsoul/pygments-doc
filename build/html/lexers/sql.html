@@ -1,0 +1,180 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.sql &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.lexers.sql"></span><div class="section" id="pygments-lexers-sql">
+<h1>pygments.lexers.sql<a class="headerlink" href="#pygments-lexers-sql" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for various SQL dialects and related interactive sessions.</p>
+<p>Postgres specific lexers:</p>
+<dl class="docutils">
+<dt><cite>PostgresLexer</cite></dt>
+<dd><p class="first">A SQL lexer for the PostgreSQL dialect. Differences w.r.t. the SQL
+lexer are:</p>
+<ul class="last simple">
+<li>keywords and data types list parsed from the PG docs (run the
+<cite>_postgres_builtins</cite> module to update them);</li>
+<li>Content of $-strings parsed using a specific lexer, e.g. the content
+of a PL/Python function is parsed using the Python lexer;</li>
+<li>parse PG specific constructs: E-strings, $-strings, U&amp;-strings,
+different operators and punctuation.</li>
+</ul>
+</dd>
+<dt><cite>PlPgsqlLexer</cite></dt>
+<dd>A lexer for the PL/pgSQL language. Adds a few specific construct on
+top of the PG SQL lexer (such as &lt;&lt;label&gt;&gt;).</dd>
+<dt><cite>PostgresConsoleLexer</cite></dt>
+<dd><p class="first">A lexer to highlight an interactive psql session:</p>
+<ul class="last simple">
+<li>identifies the prompt and does its best to detect the end of command
+in multiline statement where not all the lines are prefixed by a
+prompt, telling them apart from the output;</li>
+<li>highlights errors in the output and notification levels;</li>
+<li>handles psql backslash commands.</li>
+</ul>
+</dd>
+</dl>
+<p>The <tt class="docutils literal"><span class="pre">tests/examplefiles</span></tt> contains a few test files with data to be
+parsed by these lexers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.sql.PostgresLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.sql.</tt><tt class="descname">PostgresLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/sql.html#PostgresLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.sql.PostgresLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for the PostgreSQL dialect of SQL.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.sql.PlPgsqlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.sql.</tt><tt class="descname">PlPgsqlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/sql.html#PlPgsqlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.sql.PlPgsqlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the extra syntax in Pl/pgSQL language.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.sql.PostgresConsoleLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.sql.</tt><tt class="descname">PostgresConsoleLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/sql.html#PostgresConsoleLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.sql.PostgresConsoleLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for psql sessions.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.sql.SqlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.sql.</tt><tt class="descname">SqlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/sql.html#SqlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.sql.SqlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for Structured Query Language. Currently, this lexer does
+not recognize any special syntax except ANSI SQL.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.sql.MySqlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.sql.</tt><tt class="descname">MySqlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/sql.html#MySqlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.sql.MySqlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Special lexer for MySQL.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.sql.SqliteConsoleLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.sql.</tt><tt class="descname">SqliteConsoleLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/sql.html#SqliteConsoleLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.sql.SqliteConsoleLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for example sessions using sqlite3.</p>
+<p><em>New in Pygments 0.11.</em></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lexers/sql.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

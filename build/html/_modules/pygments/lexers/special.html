@@ -1,0 +1,198 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.special &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.lexers" href="../lexers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" accesskey="U">pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.lexers.special</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.lexers.special</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Special lexers.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">cStringIO</span>
+
+<span class="kn">from</span> <span class="nn">pygments.lexer</span> <span class="kn">import</span> <span class="n">Lexer</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Token</span><span class="p">,</span> <span class="n">Error</span><span class="p">,</span> <span class="n">Text</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">get_choice_opt</span><span class="p">,</span> <span class="n">b</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;TextLexer&#39;</span><span class="p">,</span> <span class="s">&#39;RawTokenLexer&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="TextLexer"><a class="viewcode-back" href="../../../lexers/special.html#pygments.lexers.special.TextLexer">[docs]</a><span class="k">class</span> <span class="nc">TextLexer</span><span class="p">(</span><span class="n">Lexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;Null&quot; lexer, doesn&#39;t highlight anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Text only&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.txt&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/plain&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_tokens_unprocessed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="mi">0</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">text</span>
+
+</div>
+<span class="n">_ttype_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">line_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;.*?</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="RawTokenLexer"><a class="viewcode-back" href="../../../lexers/special.html#pygments.lexers.special.RawTokenLexer">[docs]</a><span class="k">class</span> <span class="nc">RawTokenLexer</span><span class="p">(</span><span class="n">Lexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recreate a token stream formatted with the `RawTokenFormatter`.  This</span>
+<span class="sd">    lexer raises exceptions during parsing if the token stream in the</span>
+<span class="sd">    file is malformed.</span>
+
+<span class="sd">    Additional options accepted:</span>
+
+<span class="sd">    `compress`</span>
+<span class="sd">        If set to ``&quot;gz&quot;`` or ``&quot;bz2&quot;``, decompress the token stream with</span>
+<span class="sd">        the given compression algorithm before lexing (default: ``&quot;&quot;``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Raw token data&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;raw&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;application/x-pygments-tokens&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compress</span> <span class="o">=</span> <span class="n">get_choice_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;compress&#39;</span><span class="p">,</span>
+                                       <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;none&#39;</span><span class="p">,</span> <span class="s">&#39;gz&#39;</span><span class="p">,</span> <span class="s">&#39;bz2&#39;</span><span class="p">],</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">Lexer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+            <span class="c"># raw token stream never has any non-ASCII characters</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compress</span> <span class="o">==</span> <span class="s">&#39;gz&#39;</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">gzip</span>
+            <span class="n">gzipfile</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">GzipFile</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">cStringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">gzipfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">compress</span> <span class="o">==</span> <span class="s">&#39;bz2&#39;</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">bz2</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">bz2</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="c"># do not call Lexer.get_tokens() because we do not want Unicode</span>
+        <span class="c"># decoding to occur, and stripping is not optional.</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="n">b</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tokens_unprocessed</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">get_tokens_unprocessed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">line_re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ttypestr</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+                <span class="n">ttype</span> <span class="o">=</span> <span class="n">Error</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ttype</span> <span class="o">=</span> <span class="n">_ttype_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ttypestr</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">ttype</span><span class="p">:</span>
+                    <span class="n">ttype</span> <span class="o">=</span> <span class="n">Token</span>
+                    <span class="n">ttypes</span> <span class="o">=</span> <span class="n">ttypestr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+                    <span class="k">for</span> <span class="n">ttype_</span> <span class="ow">in</span> <span class="n">ttypes</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">ttype_</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ttype_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">():</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;malformed token name&#39;</span><span class="p">)</span>
+                        <span class="n">ttype</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ttype</span><span class="p">,</span> <span class="n">ttype_</span><span class="p">)</span>
+                    <span class="n">_ttype_cache</span><span class="p">[</span><span class="n">ttypestr</span><span class="p">]</span> <span class="o">=</span> <span class="n">ttype</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;unicode-escape&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">length</span><span class="p">,</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">val</span>
+            <span class="n">length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" >pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

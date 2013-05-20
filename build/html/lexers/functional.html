@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.functional &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.lexers.functional"></span><div class="section" id="pygments-lexers-functional">
+<h1>pygments.lexers.functional<a class="headerlink" href="#pygments-lexers-functional" title="Permalink to this headline">¶</a></h1>
+<p>Lexers for functional languages.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.lexers.functional.RacketLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">RacketLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#RacketLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.RacketLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for <a class="reference external" href="http://racket-lang.org/">Racket</a> source code (formerly known as
+PLT Scheme).</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.SchemeLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">SchemeLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#SchemeLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.SchemeLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Scheme lexer, parsing a stream and outputting the tokens
+needed to highlight scheme code.
+This lexer could be most probably easily subclassed to parse
+other LISP-Dialects like Common Lisp, Emacs Lisp or AutoLisp.</p>
+<p>This parser is checked with pastes from the LISP pastebin
+at <a class="reference external" href="http://paste.lisp.org/">http://paste.lisp.org/</a> to cover as much syntax as possible.</p>
+<p>It supports the full Scheme syntax as defined in R5RS.</p>
+<p><em>New in Pygments 0.6.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.CommonLispLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">CommonLispLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#CommonLispLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.CommonLispLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Common Lisp lexer.</p>
+<p><em>New in Pygments 0.9.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.HaskellLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">HaskellLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#HaskellLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.HaskellLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Haskell lexer based on the lexemes defined in the Haskell 98 Report.</p>
+<p><em>New in Pygments 0.8.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.LiterateHaskellLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">LiterateHaskellLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#LiterateHaskellLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.LiterateHaskellLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Literate Haskell (Bird-style or LaTeX) source.</p>
+<p>Additional options accepted:</p>
+<dl class="docutils">
+<dt><cite>litstyle</cite></dt>
+<dd>If given, must be <tt class="docutils literal"><span class="pre">&quot;bird&quot;</span></tt> or <tt class="docutils literal"><span class="pre">&quot;latex&quot;</span></tt>.  If not given, the style
+is autodetected: if the first non-whitespace character in the source
+is a backslash or percent character, LaTeX is assumed, else Bird.</dd>
+</dl>
+<p><em>New in Pygments 0.9.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.SMLLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">SMLLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#SMLLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.SMLLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the Standard ML language.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.OcamlLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">OcamlLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#OcamlLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.OcamlLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the OCaml language.</p>
+<p><em>New in Pygments 0.7.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.ErlangLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">ErlangLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#ErlangLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.ErlangLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the Erlang functional programming language.</p>
+<p>Blame Jeremy Thurgood (<a class="reference external" href="http://jerith.za.net/">http://jerith.za.net/</a>).</p>
+<p><em>New in Pygments 0.9.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.ErlangShellLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">ErlangShellLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#ErlangShellLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.ErlangShellLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shell sessions in erl (for Erlang code).</p>
+<p><em>New in Pygments 1.1.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.OpaLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">OpaLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#OpaLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.OpaLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for the Opa language (<a class="reference external" href="http://opalang.org">http://opalang.org</a>).</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.CoqLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">CoqLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#CoqLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.CoqLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the <a class="reference external" href="http://coq.inria.fr/">Coq</a> theorem prover.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.NewLispLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">NewLispLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#NewLispLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.NewLispLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For <a class="reference external" href="www.newlisp.org">newLISP.</a> source code (version 10.3.0).</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.ElixirLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">ElixirLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#ElixirLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.ElixirLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the <a class="reference external" href="http://elixir-lang.org">Elixir language</a>.</p>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.ElixirConsoleLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">ElixirConsoleLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#ElixirConsoleLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.ElixirConsoleLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>For Elixir interactive console (iex) output like:</p>
+<div class="highlight-iex"><div class="highlight"><pre><span class="gp">iex&gt; </span><span class="p">[</span><span class="n">head</span> <span class="o">|</span> <span class="n">tail</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">]</span>
+<span class="go">[1,2,3]</span>
+<span class="gp">iex&gt; </span><span class="n">head</span>
+<span class="go">1</span>
+<span class="gp">iex&gt; </span><span class="n">tail</span>
+<span class="go">[2,3]</span>
+<span class="gp">iex&gt; </span><span class="p">[</span><span class="n">head</span> <span class="o">|</span> <span class="n">tail</span><span class="p">]</span>
+<span class="go">[1,2,3]</span>
+<span class="gp">iex&gt; </span><span class="n">length</span> <span class="p">[</span><span class="n">head</span> <span class="o">|</span> <span class="n">tail</span><span class="p">]</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<p><em>New in Pygments 1.5.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.lexers.functional.KokaLexer">
+<em class="property">class </em><tt class="descclassname">pygments.lexers.functional.</tt><tt class="descname">KokaLexer</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/lexers/functional.html#KokaLexer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.lexers.functional.KokaLexer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lexer for the <a class="reference external" href="http://research.microsoft.com/en-us/projects/koka/">Koka</a>
+language.</p>
+<p><em>New in Pygments 1.6.</em></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lexers/functional.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

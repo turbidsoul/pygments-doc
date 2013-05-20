@@ -1,0 +1,876 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.parsers &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.lexers" href="../lexers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" accesskey="U">pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.lexers.parsers</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.lexers.parsers</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Lexers for parser generators.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">pygments.lexer</span> <span class="kn">import</span> <span class="n">RegexLexer</span><span class="p">,</span> <span class="n">DelegatingLexer</span><span class="p">,</span> \
+    <span class="n">include</span><span class="p">,</span> <span class="n">bygroups</span><span class="p">,</span> <span class="n">using</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Other</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> \
+     <span class="n">Keyword</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="n">Whitespace</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers.compiled</span> <span class="kn">import</span> <span class="n">JavaLexer</span><span class="p">,</span> <span class="n">CLexer</span><span class="p">,</span> <span class="n">CppLexer</span><span class="p">,</span> \
+    <span class="n">ObjectiveCLexer</span><span class="p">,</span> <span class="n">DLexer</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers.dotnet</span> <span class="kn">import</span> <span class="n">CSharpLexer</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers.agile</span> <span class="kn">import</span> <span class="n">RubyLexer</span><span class="p">,</span> <span class="n">PythonLexer</span><span class="p">,</span> <span class="n">PerlLexer</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers.web</span> <span class="kn">import</span> <span class="n">ActionScriptLexer</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;RagelLexer&#39;</span><span class="p">,</span> <span class="s">&#39;RagelEmbeddedLexer&#39;</span><span class="p">,</span> <span class="s">&#39;RagelCLexer&#39;</span><span class="p">,</span> <span class="s">&#39;RagelDLexer&#39;</span><span class="p">,</span>
+           <span class="s">&#39;RagelCppLexer&#39;</span><span class="p">,</span> <span class="s">&#39;RagelObjectiveCLexer&#39;</span><span class="p">,</span> <span class="s">&#39;RagelRubyLexer&#39;</span><span class="p">,</span>
+           <span class="s">&#39;RagelJavaLexer&#39;</span><span class="p">,</span> <span class="s">&#39;AntlrLexer&#39;</span><span class="p">,</span> <span class="s">&#39;AntlrPythonLexer&#39;</span><span class="p">,</span>
+           <span class="s">&#39;AntlrPerlLexer&#39;</span><span class="p">,</span> <span class="s">&#39;AntlrRubyLexer&#39;</span><span class="p">,</span> <span class="s">&#39;AntlrCppLexer&#39;</span><span class="p">,</span>
+           <span class="c">#&#39;AntlrCLexer&#39;,</span>
+           <span class="s">&#39;AntlrCSharpLexer&#39;</span><span class="p">,</span> <span class="s">&#39;AntlrObjectiveCLexer&#39;</span><span class="p">,</span>
+           <span class="s">&#39;AntlrJavaLexer&#39;</span><span class="p">,</span> <span class="s">&quot;AntlrActionScriptLexer&quot;</span><span class="p">,</span>
+           <span class="s">&#39;TreetopLexer&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="RagelLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A pure `Ragel &lt;http://www.complang.org/ragel/&gt;`_ lexer.  Use this for</span>
+<span class="sd">    fragments of Ragel.  For ``.rl`` files, use RagelEmbeddedLexer instead</span>
+<span class="sd">    (or one of the language-specific subclasses).</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Ragel&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;whitespace&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;comments&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\#.*$&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;keywords&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(access|action|alphtype)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(getkey|write|machine|include)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(any|ascii|extend|alpha|digit|alnum|lower|upper)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(xdigit|cntrl|graph|print|punct|space|zlen|empty)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;numbers&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;0x[0-9A-Fa-f]+&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[+-]?[0-9]+&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;literals&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span> <span class="c"># double quote string</span>
+            <span class="p">(</span><span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span> <span class="c"># single quote string</span>
+            <span class="p">(</span><span class="s">r&#39;\[(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">\]|[^\]])*\]&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span> <span class="c"># square bracket literals</span>
+            <span class="p">(</span><span class="s">r&#39;/(?!\*)(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">/|[^/])*/&#39;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Regex</span><span class="p">),</span> <span class="c"># regular expressions</span>
+        <span class="p">],</span>
+        <span class="s">&#39;identifiers&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;[a-zA-Z_][a-zA-Z_0-9]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;operators&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;,&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Join</span>
+            <span class="p">(</span><span class="s">r&#39;\||&amp;|--?&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Union, Intersection and Subtraction</span>
+            <span class="p">(</span><span class="s">r&#39;\.|&lt;:|:&gt;&gt;?&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Concatention</span>
+            <span class="p">(</span><span class="s">r&#39;:&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Label</span>
+            <span class="p">(</span><span class="s">r&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Epsilon Transition</span>
+            <span class="p">(</span><span class="s">r&#39;(&gt;|\$|%|&lt;|@|&lt;&gt;)(/|eof\b)&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># EOF Actions</span>
+            <span class="p">(</span><span class="s">r&#39;(&gt;|\$|%|&lt;|@|&lt;&gt;)(!|err\b)&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Global Error Actions</span>
+            <span class="p">(</span><span class="s">r&#39;(&gt;|\$|%|&lt;|@|&lt;&gt;)(\^|lerr\b)&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Local Error Actions</span>
+            <span class="p">(</span><span class="s">r&#39;(&gt;|\$|%|&lt;|@|&lt;&gt;)(~|to\b)&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># To-State Actions</span>
+            <span class="p">(</span><span class="s">r&#39;(&gt;|\$|%|&lt;|@|&lt;&gt;)(\*|from\b)&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># From-State Actions</span>
+            <span class="p">(</span><span class="s">r&#39;&gt;|@|\$|%&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Transition Actions and Priorities</span>
+            <span class="p">(</span><span class="s">r&#39;\*|\?|\+|{[0-9]*,[0-9]*}&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Repetition</span>
+            <span class="p">(</span><span class="s">r&#39;!|\^&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Negation</span>
+            <span class="p">(</span><span class="s">r&#39;\(|\)&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span> <span class="c"># Grouping</span>
+        <span class="p">],</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;literals&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comments&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;keywords&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;numbers&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;identifiers&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;operators&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;host&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;=&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;;&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;host&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">r&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span> <span class="c"># keep host code in largest possible chunks</span>
+                <span class="s">r&#39;[^{}</span><span class="se">\&#39;</span><span class="s">&quot;/#]+&#39;</span><span class="p">,</span> <span class="c"># exclude unsafe characters</span>
+                <span class="s">r&#39;[^</span><span class="se">\\</span><span class="s">][</span><span class="se">\\</span><span class="s">][{}]&#39;</span><span class="p">,</span> <span class="c"># allow escaped { or }</span>
+
+                <span class="c"># strings and comments may safely contain unsafe characters</span>
+                <span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="c"># double quote string</span>
+                <span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="c"># single quote string</span>
+                <span class="s">r&#39;//.*$\n?&#39;</span><span class="p">,</span> <span class="c"># single line comment</span>
+                <span class="s">r&#39;/\*(.|\n)*?\*/&#39;</span><span class="p">,</span> <span class="c"># multi-line javadoc-style comment</span>
+                <span class="s">r&#39;\#.*$\n?&#39;</span><span class="p">,</span> <span class="c"># ruby comment</span>
+
+                <span class="c"># regular expression: There&#39;s no reason for it to start</span>
+                <span class="c"># with a * and this stops confusion with comments.</span>
+                <span class="s">r&#39;/(?!\*)(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">/|[^/])*/&#39;</span><span class="p">,</span>
+
+                <span class="c"># / is safe now that we&#39;ve handled regex and javadoc comments</span>
+                <span class="s">r&#39;/&#39;</span><span class="p">,</span>
+            <span class="p">))</span> <span class="o">+</span> <span class="s">r&#39;)+&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#push&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;}&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="RagelEmbeddedLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelEmbeddedLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelEmbeddedLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Ragel`_ embedded in a host language file.</span>
+
+<span class="sd">    This will only highlight Ragel statements. If you want host language</span>
+<span class="sd">    highlighting then call the language-specific Ragel lexer.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Embedded Ragel&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel-em&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rl&#39;</span><span class="p">]</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">r&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span> <span class="c"># keep host code in largest possible chunks</span>
+                <span class="s">r&#39;[^%</span><span class="se">\&#39;</span><span class="s">&quot;/#]+&#39;</span><span class="p">,</span> <span class="c"># exclude unsafe characters</span>
+                <span class="s">r&#39;%(?=[^%]|$)&#39;</span><span class="p">,</span> <span class="c"># a single % sign is okay, just not 2 of them</span>
+
+                <span class="c"># strings and comments may safely contain unsafe characters</span>
+                <span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="c"># double quote string</span>
+                <span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="c"># single quote string</span>
+                <span class="s">r&#39;/\*(.|\n)*?\*/&#39;</span><span class="p">,</span> <span class="c"># multi-line javadoc-style comment</span>
+                <span class="s">r&#39;//.*$\n?&#39;</span><span class="p">,</span> <span class="c"># single line comment</span>
+                <span class="s">r&#39;\#.*$\n?&#39;</span><span class="p">,</span> <span class="c"># ruby/ragel comment</span>
+                <span class="s">r&#39;/(?!\*)(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">/|[^/])*/&#39;</span><span class="p">,</span> <span class="c"># regular expression</span>
+
+                <span class="c"># / is safe now that we&#39;ve handled regex and javadoc comments</span>
+                <span class="s">r&#39;/&#39;</span><span class="p">,</span>
+            <span class="p">))</span> <span class="o">+</span> <span class="s">r&#39;)+&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+
+            <span class="c"># Single Line FSM.</span>
+            <span class="c"># Please don&#39;t put a quoted newline in a single line FSM.</span>
+            <span class="c"># That&#39;s just mean. It will break this.</span>
+            <span class="p">(</span><span class="s">r&#39;(</span><span class="si">%%</span><span class="s">)(?![{%])(.*)($|;)(\n?)&#39;</span><span class="p">,</span> <span class="n">bygroups</span><span class="p">(</span><span class="n">Punctuation</span><span class="p">,</span>
+                                                     <span class="n">using</span><span class="p">(</span><span class="n">RagelLexer</span><span class="p">),</span>
+                                                     <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Text</span><span class="p">)),</span>
+
+            <span class="c"># Multi Line FSM.</span>
+            <span class="p">(</span><span class="s">r&#39;(</span><span class="si">%%%%</span><span class="s">|</span><span class="si">%%</span><span class="s">){&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;multi-line-fsm&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;multi-line-fsm&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">r&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span> <span class="c"># keep ragel code in largest possible chunks.</span>
+                <span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">r&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span>
+                    <span class="s">r&#39;[^}</span><span class="se">\&#39;</span><span class="s">&quot;\[/#]&#39;</span><span class="p">,</span> <span class="c"># exclude unsafe characters</span>
+                    <span class="s">r&#39;}(?=[^%]|$)&#39;</span><span class="p">,</span> <span class="c"># } is okay as long as it&#39;s not followed by %</span>
+                    <span class="s">r&#39;}%(?=[^%]|$)&#39;</span><span class="p">,</span> <span class="c"># ...well, one %&#39;s okay, just not two...</span>
+                    <span class="s">r&#39;[^</span><span class="se">\\</span><span class="s">][</span><span class="se">\\</span><span class="s">][{}]&#39;</span><span class="p">,</span> <span class="c"># ...and } is okay if it&#39;s escaped</span>
+
+                    <span class="c"># allow / if it&#39;s preceded with one of these symbols</span>
+                    <span class="c"># (ragel EOF actions)</span>
+                    <span class="s">r&#39;(&gt;|\$|%|&lt;|@|&lt;&gt;)/&#39;</span><span class="p">,</span>
+
+                    <span class="c"># specifically allow regex followed immediately by *</span>
+                    <span class="c"># so it doesn&#39;t get mistaken for a comment</span>
+                    <span class="s">r&#39;/(?!\*)(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">/|[^/])*/\*&#39;</span><span class="p">,</span>
+
+                    <span class="c"># allow / as long as it&#39;s not followed by another / or by a *</span>
+                    <span class="s">r&#39;/(?=[^/\*]|$)&#39;</span><span class="p">,</span>
+
+                    <span class="c"># We want to match as many of these as we can in one block.</span>
+                    <span class="c"># Not sure if we need the + sign here,</span>
+                    <span class="c"># does it help performance?</span>
+                    <span class="p">))</span> <span class="o">+</span> <span class="s">r&#39;)+&#39;</span><span class="p">,</span>
+
+                <span class="c"># strings and comments may safely contain unsafe characters</span>
+                <span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="c"># double quote string</span>
+                <span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="c"># single quote string</span>
+                <span class="s">r&quot;\[(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">\]|[^\]])*\]&quot;</span><span class="p">,</span> <span class="c"># square bracket literal</span>
+                <span class="s">r&#39;/\*(.|\n)*?\*/&#39;</span><span class="p">,</span> <span class="c"># multi-line javadoc-style comment</span>
+                <span class="s">r&#39;//.*$\n?&#39;</span><span class="p">,</span> <span class="c"># single line comment</span>
+                <span class="s">r&#39;\#.*$\n?&#39;</span><span class="p">,</span> <span class="c"># ruby/ragel comment</span>
+            <span class="p">))</span> <span class="o">+</span> <span class="s">r&#39;)+&#39;</span><span class="p">,</span> <span class="n">using</span><span class="p">(</span><span class="n">RagelLexer</span><span class="p">)),</span>
+
+            <span class="p">(</span><span class="s">r&#39;}</span><span class="si">%%</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;@LANG: indep&#39;</span> <span class="ow">in</span> <span class="n">text</span> <span class="ow">or</span> <span class="mf">0.1</span>
+
+</div>
+<div class="viewcode-block" id="RagelRubyLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelRubyLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelRubyLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Ragel`_ in a Ruby host file.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Ragel in Ruby Host&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel-ruby&#39;</span><span class="p">,</span> <span class="s">&#39;ragel-rb&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rl&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RagelRubyLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">RubyLexer</span><span class="p">,</span> <span class="n">RagelEmbeddedLexer</span><span class="p">,</span>
+                                              <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;@LANG: ruby&#39;</span> <span class="ow">in</span> <span class="n">text</span>
+
+</div>
+<div class="viewcode-block" id="RagelCLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelCLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelCLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Ragel`_ in a C host file.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Ragel in C Host&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel-c&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rl&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RagelCLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">CLexer</span><span class="p">,</span> <span class="n">RagelEmbeddedLexer</span><span class="p">,</span>
+                                          <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;@LANG: c&#39;</span> <span class="ow">in</span> <span class="n">text</span>
+
+</div>
+<div class="viewcode-block" id="RagelDLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelDLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelDLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Ragel`_ in a D host file.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Ragel in D Host&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel-d&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rl&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RagelDLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">DLexer</span><span class="p">,</span> <span class="n">RagelEmbeddedLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;@LANG: d&#39;</span> <span class="ow">in</span> <span class="n">text</span>
+
+</div>
+<div class="viewcode-block" id="RagelCppLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelCppLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelCppLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Ragel`_ in a CPP host file.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Ragel in CPP Host&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel-cpp&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rl&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RagelCppLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">CppLexer</span><span class="p">,</span> <span class="n">RagelEmbeddedLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;@LANG: c++&#39;</span> <span class="ow">in</span> <span class="n">text</span>
+
+</div>
+<div class="viewcode-block" id="RagelObjectiveCLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelObjectiveCLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelObjectiveCLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Ragel`_ in an Objective C host file.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Ragel in Objective C Host&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel-objc&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rl&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RagelObjectiveCLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">ObjectiveCLexer</span><span class="p">,</span>
+                                                   <span class="n">RagelEmbeddedLexer</span><span class="p">,</span>
+                                                   <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;@LANG: objc&#39;</span> <span class="ow">in</span> <span class="n">text</span>
+
+</div>
+<div class="viewcode-block" id="RagelJavaLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.RagelJavaLexer">[docs]</a><span class="k">class</span> <span class="nc">RagelJavaLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Ragel`_ in a Java host file.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Ragel in Java Host&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ragel-java&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rl&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RagelJavaLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">JavaLexer</span><span class="p">,</span> <span class="n">RagelEmbeddedLexer</span><span class="p">,</span>
+                                             <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;@LANG: java&#39;</span> <span class="ow">in</span> <span class="n">text</span>
+
+</div>
+<div class="viewcode-block" id="AntlrLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generic `ANTLR`_ Lexer.</span>
+<span class="sd">    Should not be called directly, instead</span>
+<span class="sd">    use DelegatingLexer for your target language.</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+
+<span class="sd">    .. _ANTLR: http://www.antlr.org/</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">_id</span> <span class="o">=</span>          <span class="s">r&#39;[A-Za-z][A-Za-z_0-9]*&#39;</span>
+    <span class="n">_TOKEN_REF</span> <span class="o">=</span>   <span class="s">r&#39;[A-Z][A-Za-z_0-9]*&#39;</span>
+    <span class="n">_RULE_REF</span> <span class="o">=</span>    <span class="s">r&#39;[a-z][A-Za-z_0-9]*&#39;</span>
+    <span class="n">_STRING_LITERAL</span> <span class="o">=</span> <span class="s">r&#39;</span><span class="se">\&#39;</span><span class="s">(?:</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\\&#39;</span><span class="s">|[^</span><span class="se">\&#39;</span><span class="s">]*)</span><span class="se">\&#39;</span><span class="s">&#39;</span>
+    <span class="n">_INT</span> <span class="o">=</span> <span class="s">r&#39;[0-9]+&#39;</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;whitespace&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;comments&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;//.*$&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;/\*(.|\n)*?\*/&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comments&#39;</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;(lexer|parser|tree)?(\s*)(grammar\b)(\s*)(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)(;)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">,</span>
+                      <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="c"># optionsSpec</span>
+            <span class="p">(</span><span class="s">r&#39;options\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;options&#39;</span><span class="p">),</span>
+            <span class="c"># tokensSpec</span>
+            <span class="p">(</span><span class="s">r&#39;tokens\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;tokens&#39;</span><span class="p">),</span>
+            <span class="c"># attrScope</span>
+            <span class="p">(</span><span class="s">r&#39;(scope)(\s*)(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)(\s*)({)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span>
+                      <span class="n">Punctuation</span><span class="p">),</span> <span class="s">&#39;action&#39;</span><span class="p">),</span>
+            <span class="c"># exception</span>
+            <span class="p">(</span><span class="s">r&#39;(catch|finally)\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;exception&#39;</span><span class="p">),</span>
+            <span class="c"># action</span>
+            <span class="p">(</span><span class="s">r&#39;(@&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)(\s*)(::)?(\s*)(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)(\s*)({)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span>
+                      <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span> <span class="s">&#39;action&#39;</span><span class="p">),</span>
+            <span class="c"># rule</span>
+            <span class="p">(</span><span class="s">r&#39;((?:protected|private|public|fragment)\b)?(\s*)(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)(!)?&#39;</span><span class="p">,</span> \
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+             <span class="p">(</span><span class="s">&#39;rule-alts&#39;</span><span class="p">,</span> <span class="s">&#39;rule-prelims&#39;</span><span class="p">)),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;exception&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\n&#39;</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\s&#39;</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comments&#39;</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;\[&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;nested-arg-action&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;action&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;rule-prelims&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comments&#39;</span><span class="p">),</span>
+
+            <span class="p">(</span><span class="s">r&#39;returns\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\[&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;nested-arg-action&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;action&#39;</span><span class="p">),</span>
+            <span class="c"># throwsSpec</span>
+            <span class="p">(</span><span class="s">r&#39;(throws)(\s+)(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;(,)(\s*)(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Punctuation</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">)),</span> <span class="c"># Additional throws</span>
+            <span class="c"># optionsSpec</span>
+            <span class="p">(</span><span class="s">r&#39;options\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;options&#39;</span><span class="p">),</span>
+            <span class="c"># ruleScopeSpec - scope followed by target language code or name of action</span>
+            <span class="c"># TODO finish implementing other possibilities for scope</span>
+            <span class="c"># L173 ANTLRv3.g from ANTLR book</span>
+            <span class="p">(</span><span class="s">r&#39;(scope)(\s+)({)&#39;</span><span class="p">,</span> <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="s">&#39;action&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(scope)(\s+)(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)(\s*)(;)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="c"># ruleAction</span>
+            <span class="p">(</span><span class="s">r&#39;(@&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">&#39;)(\s*)({)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span> <span class="s">&#39;action&#39;</span><span class="p">),</span>
+            <span class="c"># finished prelims, go to rule alts!</span>
+            <span class="p">(</span><span class="s">r&#39;:&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;rule-alts&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comments&#39;</span><span class="p">),</span>
+
+            <span class="c"># These might need to go in a separate &#39;block&#39; state triggered by (</span>
+            <span class="p">(</span><span class="s">r&#39;options\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;options&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;:&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+
+            <span class="c"># literals</span>
+            <span class="p">(</span><span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;&lt;&lt;([^&gt;]|&gt;[^&gt;])&gt;&gt;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+            <span class="c"># identifiers</span>
+            <span class="c"># Tokens start with capital letter.</span>
+            <span class="p">(</span><span class="s">r&#39;\$?[A-Z_][A-Za-z_0-9]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+            <span class="c"># Rules start with small letter.</span>
+            <span class="p">(</span><span class="s">r&#39;\$?[a-z_][A-Za-z_0-9]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">),</span>
+            <span class="c"># operators</span>
+            <span class="p">(</span><span class="s">r&#39;(\+|\||-&gt;|=&gt;|=|\(|\)|\.\.|\.|\?|\*|\^|!|\#|~)&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;,&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\[&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;nested-arg-action&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;action&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;;&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;tokens&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="n">_TOKEN_REF</span> <span class="o">+</span> <span class="s">r&#39;)(\s*)(=)?(\s*)(&#39;</span> <span class="o">+</span> <span class="n">_STRING_LITERAL</span>
+             <span class="o">+</span> <span class="s">&#39;)?(\s*)(;)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span>
+                      <span class="n">String</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;}&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;options&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comments&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="n">_id</span> <span class="o">+</span> <span class="s">r&#39;)(\s*)(=)(\s*)(&#39;</span> <span class="o">+</span>
+             <span class="s">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">_id</span><span class="p">,</span> <span class="n">_STRING_LITERAL</span><span class="p">,</span> <span class="n">_INT</span><span class="p">,</span> <span class="s">&#39;\*&#39;</span><span class="p">))</span><span class="o">+</span> <span class="s">&#39;)(\s*)(;)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span>
+                      <span class="n">Text</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;}&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">r&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span> <span class="c"># keep host code in largest possible chunks</span>
+                <span class="s">r&#39;[^\${}</span><span class="se">\&#39;</span><span class="s">&quot;/</span><span class="se">\\</span><span class="s">]+&#39;</span><span class="p">,</span> <span class="c"># exclude unsafe characters</span>
+
+                <span class="c"># strings and comments may safely contain unsafe characters</span>
+                <span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="c"># double quote string</span>
+                <span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="c"># single quote string</span>
+                <span class="s">r&#39;//.*$\n?&#39;</span><span class="p">,</span> <span class="c"># single line comment</span>
+                <span class="s">r&#39;/\*(.|\n)*?\*/&#39;</span><span class="p">,</span> <span class="c"># multi-line javadoc-style comment</span>
+
+                <span class="c"># regular expression: There&#39;s no reason for it to start</span>
+                <span class="c"># with a * and this stops confusion with comments.</span>
+                <span class="s">r&#39;/(?!\*)(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">/|[^/])*/&#39;</span><span class="p">,</span>
+
+                <span class="c"># backslashes are okay, as long as we are not backslashing a %</span>
+                <span class="s">r&#39;</span><span class="se">\\</span><span class="s">(?!%)&#39;</span><span class="p">,</span>
+
+                <span class="c"># Now that we&#39;ve handled regex and javadoc comments</span>
+                <span class="c"># it&#39;s safe to let / through.</span>
+                <span class="s">r&#39;/&#39;</span><span class="p">,</span>
+            <span class="p">))</span> <span class="o">+</span> <span class="s">r&#39;)+&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(</span><span class="se">\\</span><span class="s">)(%)&#39;</span><span class="p">,</span> <span class="n">bygroups</span><span class="p">(</span><span class="n">Punctuation</span><span class="p">,</span> <span class="n">Other</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;(\$[a-zA-Z]+)(\.?)(text|value)?&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Property</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#push&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;}&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;nested-arg-action&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(&#39;</span> <span class="o">+</span> <span class="s">r&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span> <span class="c"># keep host code in largest possible chunks.</span>
+                <span class="s">r&#39;[^\$\[\]</span><span class="se">\&#39;</span><span class="s">&quot;/]+&#39;</span><span class="p">,</span> <span class="c"># exclude unsafe characters</span>
+
+                <span class="c"># strings and comments may safely contain unsafe characters</span>
+                <span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="c"># double quote string</span>
+                <span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="c"># single quote string</span>
+                <span class="s">r&#39;//.*$\n?&#39;</span><span class="p">,</span> <span class="c"># single line comment</span>
+                <span class="s">r&#39;/\*(.|\n)*?\*/&#39;</span><span class="p">,</span> <span class="c"># multi-line javadoc-style comment</span>
+
+                <span class="c"># regular expression: There&#39;s no reason for it to start</span>
+                <span class="c"># with a * and this stops confusion with comments.</span>
+                <span class="s">r&#39;/(?!\*)(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">/|[^/])*/&#39;</span><span class="p">,</span>
+
+                <span class="c"># Now that we&#39;ve handled regex and javadoc comments</span>
+                <span class="c"># it&#39;s safe to let / through.</span>
+                <span class="s">r&#39;/&#39;</span><span class="p">,</span>
+            <span class="p">))</span> <span class="o">+</span> <span class="s">r&#39;)+&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+
+
+            <span class="p">(</span><span class="s">r&#39;\[&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#push&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\]&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;(\$[a-zA-Z]+)(\.?)(text|value)?&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Property</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">\]|</span><span class="se">\\</span><span class="s">\[|[^\[\]])+&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*grammar\s+[a-zA-Z0-9]+\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+<span class="c"># http://www.antlr.org/wiki/display/ANTLR3/Code+Generation+Targets</span>
+
+<span class="c"># TH: I&#39;m not aware of any language features of C++ that will cause</span>
+<span class="c"># incorrect lexing of C files.  Antlr doesn&#39;t appear to make a distinction,</span>
+<span class="c"># so just assume they&#39;re C++.  No idea how to make Objective C work in the</span>
+<span class="c"># future.</span>
+
+<span class="c">#class AntlrCLexer(DelegatingLexer):</span>
+<span class="c">#    &quot;&quot;&quot;</span>
+<span class="c">#    ANTLR with C Target</span>
+<span class="c">#</span>
+<span class="c">#    *New in Pygments 1.1*</span>
+<span class="c">#    &quot;&quot;&quot;</span>
+<span class="c">#</span>
+<span class="c">#    name = &#39;ANTLR With C Target&#39;</span>
+<span class="c">#    aliases = [&#39;antlr-c&#39;]</span>
+<span class="c">#    filenames = [&#39;*.G&#39;, &#39;*.g&#39;]</span>
+<span class="c">#</span>
+<span class="c">#    def __init__(self, **options):</span>
+<span class="c">#        super(AntlrCLexer, self).__init__(CLexer, AntlrLexer, **options)</span>
+<span class="c">#</span>
+<span class="c">#    def analyse_text(text):</span>
+<span class="c">#        return re.match(r&#39;^\s*language\s*=\s*C\s*;&#39;, text)</span>
+</div>
+<div class="viewcode-block" id="AntlrCppLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrCppLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrCppLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with CPP Target</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With CPP Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-cpp&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrCppLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">CppLexer</span><span class="p">,</span> <span class="n">AntlrLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*language\s*=\s*C\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AntlrObjectiveCLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrObjectiveCLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrObjectiveCLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with Objective-C Target</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With ObjectiveC Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-objc&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrObjectiveCLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">ObjectiveCLexer</span><span class="p">,</span>
+                                                   <span class="n">AntlrLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*language\s*=\s*ObjC\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AntlrCSharpLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrCSharpLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrCSharpLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with C# Target</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With C# Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-csharp&#39;</span><span class="p">,</span> <span class="s">&#39;antlr-c#&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrCSharpLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">CSharpLexer</span><span class="p">,</span> <span class="n">AntlrLexer</span><span class="p">,</span>
+                                               <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*language\s*=\s*CSharp2\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AntlrPythonLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrPythonLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrPythonLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with Python Target</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With Python Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-python&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrPythonLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">PythonLexer</span><span class="p">,</span> <span class="n">AntlrLexer</span><span class="p">,</span>
+                                               <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*language\s*=\s*Python\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AntlrJavaLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrJavaLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrJavaLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with Java Target</span>
+
+<span class="sd">    *New in Pygments 1.1*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With Java Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-java&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrJavaLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">JavaLexer</span><span class="p">,</span> <span class="n">AntlrLexer</span><span class="p">,</span>
+                                             <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="c"># Antlr language is Java by default</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> <span class="mf">0.9</span>
+
+</div>
+<div class="viewcode-block" id="AntlrRubyLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrRubyLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrRubyLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with Ruby Target</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With Ruby Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-ruby&#39;</span><span class="p">,</span> <span class="s">&#39;antlr-rb&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrRubyLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">RubyLexer</span><span class="p">,</span> <span class="n">AntlrLexer</span><span class="p">,</span>
+                                             <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*language\s*=\s*Ruby\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AntlrPerlLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrPerlLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrPerlLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with Perl Target</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With Perl Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-perl&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrPerlLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">PerlLexer</span><span class="p">,</span> <span class="n">AntlrLexer</span><span class="p">,</span>
+                                             <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*language\s*=\s*Perl5\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AntlrActionScriptLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.AntlrActionScriptLexer">[docs]</a><span class="k">class</span> <span class="nc">AntlrActionScriptLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ANTLR`_ with ActionScript Target</span>
+
+<span class="sd">    *New in Pygments 1.1.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ANTLR With ActionScript Target&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;antlr-as&#39;</span><span class="p">,</span> <span class="s">&#39;antlr-actionscript&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.G&#39;</span><span class="p">,</span> <span class="s">&#39;*.g&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AntlrActionScriptLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">ActionScriptLexer</span><span class="p">,</span>
+                                                     <span class="n">AntlrLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AntlrLexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;^\s*language\s*=\s*ActionScript\s*;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+</div>
+<span class="k">class</span> <span class="nc">TreetopBaseLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A base lexer for `Treetop &lt;http://treetop.rubyforge.org/&gt;`_ grammars.</span>
+<span class="sd">    Not for direct use; use TreetopLexer instead.</span>
+
+<span class="sd">    *New in Pygments 1.6.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;space&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;require[ \t]+[^\n\r]+[\n\r]&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;module\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Namespace</span><span class="p">,</span> <span class="s">&#39;module&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;grammar\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;grammar&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;module&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;space&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;end&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;module\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;#push&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;grammar\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;grammar&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[A-Z][A-Za-z_0-9]*(?:::[A-Z][A-Za-z_0-9]*)*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Namespace</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;grammar&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;space&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;end&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;rule\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;rule&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;include\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;include&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[A-Z][A-Za-z_0-9]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;include&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;space&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[A-Z][A-Za-z_0-9]*(?:::[A-Z][A-Za-z_0-9]*)*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;rule&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;space&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;end&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;&quot;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&quot;|[^&quot;])*&quot;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Double</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&quot;&#39;(</span><span class="se">\\\\</span><span class="s">|</span><span class="se">\\</span><span class="s">&#39;|[^&#39;])*&#39;&quot;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;([A-Za-z_][A-Za-z_0-9]*)(:)&#39;</span><span class="p">,</span> <span class="n">bygroups</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;[A-Za-z_][A-Za-z_0-9]*&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[()]&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[?+*/&amp;!~]&#39;</span><span class="p">,</span> <span class="n">Operator</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\[(?:</span><span class="se">\\</span><span class="s">.|\[:\^?[a-z]+:\]|[^</span><span class="se">\\</span><span class="s">\]])+\]&#39;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Regex</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;([0-9]*)(\.\.)([0-9]*)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;(&lt;)([^&gt;]+)(&gt;)&#39;</span><span class="p">,</span> <span class="n">bygroups</span><span class="p">(</span><span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;inline_module&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\.&#39;</span><span class="p">,</span> <span class="n">String</span><span class="o">.</span><span class="n">Regex</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;inline_module&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">,</span> <span class="s">&#39;ruby&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;}&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[^{}]+&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;ruby&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;{&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">,</span> <span class="s">&#39;#push&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;}&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[^{}]+&#39;</span><span class="p">,</span> <span class="n">Other</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;space&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;[ \t\n\r]+&#39;</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;#[^\n]*&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;end&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;end\b&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="s">&#39;#pop&#39;</span><span class="p">),</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="TreetopLexer"><a class="viewcode-back" href="../../../lexers/parsers.html#pygments.lexers.parsers.TreetopLexer">[docs]</a><span class="k">class</span> <span class="nc">TreetopLexer</span><span class="p">(</span><span class="n">DelegatingLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A lexer for `Treetop &lt;http://treetop.rubyforge.org/&gt;`_ grammars.</span>
+
+<span class="sd">    *New in Pygments 1.6.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Treetop&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;treetop&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.treetop&#39;</span><span class="p">,</span> <span class="s">&#39;*.tt&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TreetopLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">RubyLexer</span><span class="p">,</span> <span class="n">TreetopBaseLexer</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" >pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

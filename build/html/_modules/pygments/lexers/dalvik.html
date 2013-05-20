@@ -1,0 +1,202 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers.dalvik &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.lexers" href="../lexers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" accesskey="U">pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.lexers.dalvik</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.lexers.dalvik</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Pygments lexers for Dalvik VM-related languages.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygments.lexer</span> <span class="kn">import</span> <span class="n">RegexLexer</span><span class="p">,</span> <span class="n">include</span><span class="p">,</span> <span class="n">bygroups</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> \
+                           <span class="n">Punctuation</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;SmaliLexer&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="SmaliLexer"><a class="viewcode-back" href="../../../lexers/dalvik.html#pygments.lexers.dalvik.SmaliLexer">[docs]</a><span class="k">class</span> <span class="nc">SmaliLexer</span><span class="p">(</span><span class="n">RegexLexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For `Smali &lt;http://code.google.com/p/smali/&gt;`_ (Android/Dalvik) assembly</span>
+<span class="sd">    code.</span>
+
+<span class="sd">    *New in Pygments 1.6.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Smali&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;smali&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.smali&#39;</span><span class="p">]</span>
+    <span class="n">mimetypes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;text/smali&#39;</span><span class="p">]</span>
+
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;root&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;comment&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;label&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;field&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;method&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;class&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;directive&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;access-modifier&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;instruction&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;literal&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;punctuation&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;type&#39;</span><span class="p">),</span>
+            <span class="n">include</span><span class="p">(</span><span class="s">&#39;whitespace&#39;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s">&#39;directive&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;^[ \t]*\.(class|super|implements|field|subannotation|annotation|&#39;</span>
+             <span class="s">r&#39;enum|method|registers|locals|array-data|packed-switch|&#39;</span>
+             <span class="s">r&#39;sparse-switch|catchall|catch|line|parameter|local|prologue|&#39;</span>
+             <span class="s">r&#39;epilogue|source)&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;^[ \t]*\.end (field|subannotation|annotation|method|array-data|&#39;</span>
+             <span class="s">&#39;packed-switch|sparse-switch|parameter|local)&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;^[ \t]*\.restart local&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;access-modifier&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(public|private|protected|static|final|synchronized|bridge|&#39;</span>
+             <span class="s">r&#39;varargs|native|abstract|strictfp|synthetic|constructor|&#39;</span>
+             <span class="s">r&#39;declared-synchronized|interface|enum|annotation|volatile|&#39;</span>
+             <span class="s">r&#39;transient)&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;whitespace&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\n&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;instruction&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;\b[vp]\d+\b&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">),</span> <span class="c"># registers</span>
+            <span class="p">(</span><span class="s">r&#39;\b[a-z][A-Za-z0-9/-]+\s+&#39;</span><span class="p">,</span> <span class="n">Text</span><span class="p">),</span> <span class="c"># instructions</span>
+        <span class="p">],</span>
+        <span class="s">&#39;literal&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;&quot;.*&quot;&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;0x[0-9A-Fa-f]+t?&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[0-9]*\.[0-9]+([eE][0-9]+)?[fd]?&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Float</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[0-9]+L?&#39;</span><span class="p">,</span> <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;field&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;(\$?\b)([A-Za-z0-9_$]*)(:)&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;method&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;&lt;(?:cl)?init&gt;&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">),</span> <span class="c"># constructor</span>
+            <span class="p">(</span><span class="s">r&#39;(\$?\b)([A-Za-z0-9_$]*)(\()&#39;</span><span class="p">,</span>
+             <span class="n">bygroups</span><span class="p">(</span><span class="n">Punctuation</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">)),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;:[A-Za-z0-9_]+&#39;</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;class&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="c"># class names in the form Lcom/namespace/ClassName;</span>
+            <span class="c"># I only want to color the ClassName part, so the namespace part is</span>
+            <span class="c"># treated as &#39;Text&#39;</span>
+            <span class="p">(</span><span class="s">r&#39;(L)((?:[A-Za-z0-9_$]+/)*)([A-Za-z0-9_$]+)(;)&#39;</span><span class="p">,</span>
+                <span class="n">bygroups</span><span class="p">(</span><span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">,</span> <span class="n">Text</span><span class="p">)),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;punctuation&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">r&#39;[{},\(\):=\.-]&#39;</span><span class="p">,</span> <span class="n">Punctuation</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;[ZBSCIJFDV\[]+&#39;</span><span class="p">,</span> <span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="s">&#39;comment&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s">r&#39;#.*?\n&#39;</span><span class="p">,</span> <span class="n">Comment</span><span class="p">),</span>
+        <span class="p">],</span>
+    <span class="p">}</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../lexers.html" >pygments.lexers</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
