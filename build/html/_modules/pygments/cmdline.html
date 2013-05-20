@@ -1,0 +1,537 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.cmdline &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../index.html" />
+    <link rel="up" title="pygments" href="../pygments.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" accesskey="U">pygments</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.cmdline</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.cmdline</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Command line interface.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">getopt</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">dedent</span>
+
+<span class="kn">from</span> <span class="nn">pygments</span> <span class="kn">import</span> <span class="n">__version__</span><span class="p">,</span> <span class="n">highlight</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">ClassNotFound</span><span class="p">,</span> <span class="n">OptionError</span><span class="p">,</span> <span class="n">docstring_headline</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers</span> <span class="kn">import</span> <span class="n">get_all_lexers</span><span class="p">,</span> <span class="n">get_lexer_by_name</span><span class="p">,</span> <span class="n">get_lexer_for_filename</span><span class="p">,</span> \
+     <span class="n">find_lexer_class</span><span class="p">,</span> <span class="n">guess_lexer</span><span class="p">,</span> <span class="n">TextLexer</span>
+<span class="kn">from</span> <span class="nn">pygments.formatters</span> <span class="kn">import</span> <span class="n">get_all_formatters</span><span class="p">,</span> <span class="n">get_formatter_by_name</span><span class="p">,</span> \
+     <span class="n">get_formatter_for_filename</span><span class="p">,</span> <span class="n">find_formatter_class</span><span class="p">,</span> \
+     <span class="n">TerminalFormatter</span>  <span class="c"># pylint:disable-msg=E0611</span>
+<span class="kn">from</span> <span class="nn">pygments.filters</span> <span class="kn">import</span> <span class="n">get_all_filters</span><span class="p">,</span> <span class="n">find_filter_class</span>
+<span class="kn">from</span> <span class="nn">pygments.styles</span> <span class="kn">import</span> <span class="n">get_all_styles</span><span class="p">,</span> <span class="n">get_style_by_name</span>
+
+
+<span class="n">USAGE</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s">Usage: </span><span class="si">%s</span><span class="s"> [-l &lt;lexer&gt; | -g] [-F &lt;filter&gt;[:&lt;options&gt;]] [-f &lt;formatter&gt;]</span>
+<span class="s">          [-O &lt;options&gt;] [-P &lt;option=value&gt;] [-o &lt;outfile&gt;] [&lt;infile&gt;]</span>
+
+<span class="s">       </span><span class="si">%s</span><span class="s"> -S &lt;style&gt; -f &lt;formatter&gt; [-a &lt;arg&gt;] [-O &lt;options&gt;] [-P &lt;option=value&gt;]</span>
+<span class="s">       </span><span class="si">%s</span><span class="s"> -L [&lt;which&gt; ...]</span>
+<span class="s">       </span><span class="si">%s</span><span class="s"> -N &lt;filename&gt;</span>
+<span class="s">       </span><span class="si">%s</span><span class="s"> -H &lt;type&gt; &lt;name&gt;</span>
+<span class="s">       </span><span class="si">%s</span><span class="s"> -h | -V</span>
+
+<span class="s">Highlight the input file and write the result to &lt;outfile&gt;.</span>
+
+<span class="s">If no input file is given, use stdin, if -o is not given, use stdout.</span>
+
+<span class="s">&lt;lexer&gt; is a lexer name (query all lexer names with -L). If -l is not</span>
+<span class="s">given, the lexer is guessed from the extension of the input file name</span>
+<span class="s">(this obviously doesn&#39;t work if the input is stdin).  If -g is passed,</span>
+<span class="s">attempt to guess the lexer from the file contents, or pass through as</span>
+<span class="s">plain text if this fails (this can work for stdin).</span>
+
+<span class="s">Likewise, &lt;formatter&gt; is a formatter name, and will be guessed from</span>
+<span class="s">the extension of the output file name. If no output file is given,</span>
+<span class="s">the terminal formatter will be used by default.</span>
+
+<span class="s">With the -O option, you can give the lexer and formatter a comma-</span>
+<span class="s">separated list of options, e.g. ``-O bg=light,python=cool``.</span>
+
+<span class="s">The -P option adds lexer and formatter options like the -O option, but</span>
+<span class="s">you can only give one option per -P. That way, the option value may</span>
+<span class="s">contain commas and equals signs, which it can&#39;t with -O, e.g.</span>
+<span class="s">``-P &quot;heading=Pygments, the Python highlighter&quot;.</span>
+
+<span class="s">With the -F option, you can add filters to the token stream, you can</span>
+<span class="s">give options in the same way as for -O after a colon (note: there must</span>
+<span class="s">not be spaces around the colon).</span>
+
+<span class="s">The -O, -P and -F options can be given multiple times.</span>
+
+<span class="s">With the -S option, print out style definitions for style &lt;style&gt;</span>
+<span class="s">for formatter &lt;formatter&gt;. The argument given by -a is formatter</span>
+<span class="s">dependent.</span>
+
+<span class="s">The -L option lists lexers, formatters, styles or filters -- set</span>
+<span class="s">`which` to the thing you want to list (e.g. &quot;styles&quot;), or omit it to</span>
+<span class="s">list everything.</span>
+
+<span class="s">The -N option guesses and prints out a lexer name based solely on</span>
+<span class="s">the given filename. It does not take input or highlight anything.</span>
+<span class="s">If no specific lexer can be determined &quot;text&quot; is returned.</span>
+
+<span class="s">The -H option prints detailed help for the object &lt;name&gt; of type &lt;type&gt;,</span>
+<span class="s">where &lt;type&gt; is one of &quot;lexer&quot;, &quot;formatter&quot; or &quot;filter&quot;.</span>
+
+<span class="s">The -h option prints this help.</span>
+<span class="s">The -V option prints the package version.</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_options</span><span class="p">(</span><span class="n">o_strs</span><span class="p">):</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">o_strs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">opts</span>
+    <span class="k">for</span> <span class="n">o_str</span> <span class="ow">in</span> <span class="n">o_strs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">o_str</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">o_args</span> <span class="o">=</span> <span class="n">o_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">o_arg</span> <span class="ow">in</span> <span class="n">o_args</span><span class="p">:</span>
+            <span class="n">o_arg</span> <span class="o">=</span> <span class="n">o_arg</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">o_key</span><span class="p">,</span> <span class="n">o_val</span> <span class="o">=</span> <span class="n">o_arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">)</span>
+                <span class="n">o_key</span> <span class="o">=</span> <span class="n">o_key</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">o_val</span> <span class="o">=</span> <span class="n">o_val</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">opts</span><span class="p">[</span><span class="n">o_arg</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">opts</span><span class="p">[</span><span class="n">o_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">o_val</span>
+    <span class="k">return</span> <span class="n">opts</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_filters</span><span class="p">(</span><span class="n">f_strs</span><span class="p">):</span>
+    <span class="n">filters</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">f_strs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filters</span>
+    <span class="k">for</span> <span class="n">f_str</span> <span class="ow">in</span> <span class="n">f_strs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s">&#39;:&#39;</span> <span class="ow">in</span> <span class="n">f_str</span><span class="p">:</span>
+            <span class="n">fname</span><span class="p">,</span> <span class="n">fopts</span> <span class="o">=</span> <span class="n">f_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">fname</span><span class="p">,</span> <span class="n">_parse_options</span><span class="p">([</span><span class="n">fopts</span><span class="p">])))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">f_str</span><span class="p">,</span> <span class="p">{}))</span>
+    <span class="k">return</span> <span class="n">filters</span>
+
+
+<span class="k">def</span> <span class="nf">_print_help</span><span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">what</span> <span class="o">==</span> <span class="s">&#39;lexer&#39;</span><span class="p">:</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">find_lexer_class</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;Help on the </span><span class="si">%s</span><span class="s"> lexer:&quot;</span> <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">print</span> <span class="n">dedent</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">what</span> <span class="o">==</span> <span class="s">&#39;formatter&#39;</span><span class="p">:</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">find_formatter_class</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;Help on the </span><span class="si">%s</span><span class="s"> formatter:&quot;</span> <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">print</span> <span class="n">dedent</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">what</span> <span class="o">==</span> <span class="s">&#39;filter&#39;</span><span class="p">:</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">find_filter_class</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;Help on the </span><span class="si">%s</span><span class="s"> filter:&quot;</span> <span class="o">%</span> <span class="n">name</span>
+            <span class="k">print</span> <span class="n">dedent</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> not found!&quot;</span> <span class="o">%</span> <span class="n">what</span>
+
+
+<span class="k">def</span> <span class="nf">_print_list</span><span class="p">(</span><span class="n">what</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">what</span> <span class="o">==</span> <span class="s">&#39;lexer&#39;</span><span class="p">:</span>
+        <span class="k">print</span>
+        <span class="k">print</span> <span class="s">&quot;Lexers:&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;~~~~~~~&quot;</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">exts</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">get_all_lexers</span><span class="p">():</span>
+            <span class="n">tup</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span>
+                   <span class="n">exts</span> <span class="ow">and</span> <span class="s">&#39;(filenames &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exts</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="k">print</span> <span class="p">(</span><span class="s">&#39;* </span><span class="si">%s</span><span class="se">\n</span><span class="s">    </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">i</span>
+
+    <span class="k">elif</span> <span class="n">what</span> <span class="o">==</span> <span class="s">&#39;formatter&#39;</span><span class="p">:</span>
+        <span class="k">print</span>
+        <span class="k">print</span> <span class="s">&quot;Formatters:&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;~~~~~~~~~~~&quot;</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">get_all_formatters</span><span class="p">():</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">docstring_headline</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+            <span class="n">tup</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">aliases</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">filenames</span> <span class="ow">and</span>
+                   <span class="s">&#39;(filenames &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">filenames</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="k">print</span> <span class="p">(</span><span class="s">&#39;* </span><span class="si">%s</span><span class="se">\n</span><span class="s">    </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">i</span>
+
+    <span class="k">elif</span> <span class="n">what</span> <span class="o">==</span> <span class="s">&#39;filter&#39;</span><span class="p">:</span>
+        <span class="k">print</span>
+        <span class="k">print</span> <span class="s">&quot;Filters:&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;~~~~~~~~&quot;</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">get_all_filters</span><span class="p">():</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">find_filter_class</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;* &quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span>
+            <span class="k">print</span> <span class="s">&quot;    </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">docstring_headline</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">what</span> <span class="o">==</span> <span class="s">&#39;style&#39;</span><span class="p">:</span>
+        <span class="k">print</span>
+        <span class="k">print</span> <span class="s">&quot;Styles:&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;~~~~~~~&quot;</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">get_all_styles</span><span class="p">():</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">get_style_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;* &quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span>
+            <span class="k">print</span> <span class="s">&quot;    </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">docstring_headline</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../cmdline.html#pygments.cmdline.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main command line entry point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># pylint: disable-msg=R0911,R0912,R0915</span>
+
+    <span class="n">usage</span> <span class="o">=</span> <span class="n">USAGE</span> <span class="o">%</span> <span class="p">((</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span> <span class="o">*</span> <span class="mi">6</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;win32&#39;</span><span class="p">,</span> <span class="s">&#39;cygwin&#39;</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># Provide coloring under Windows, if possible</span>
+            <span class="kn">import</span> <span class="nn">colorama</span>
+            <span class="n">colorama</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">popts</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">getopt</span><span class="o">.</span><span class="n">getopt</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="s">&quot;l:f:F:o:O:P:LS:a:N:hVHg&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">getopt</span><span class="o">.</span><span class="n">GetoptError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+        <span class="k">return</span> <span class="mi">2</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">O_opts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">P_opts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">F_opts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">opt</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">popts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="o">==</span> <span class="s">&#39;-O&#39;</span><span class="p">:</span>
+            <span class="n">O_opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">opt</span> <span class="o">==</span> <span class="s">&#39;-P&#39;</span><span class="p">:</span>
+            <span class="n">P_opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">opt</span> <span class="o">==</span> <span class="s">&#39;-F&#39;</span><span class="p">:</span>
+            <span class="n">F_opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="n">opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">opts</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">usage</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-h&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">usage</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-V&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Pygments version </span><span class="si">%s</span><span class="s">, (c) 2006-2013 by Georg Brandl.&#39;</span> <span class="o">%</span> <span class="n">__version__</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c"># handle ``pygmentize -L``</span>
+    <span class="n">L_opt</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-L&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">L_opt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opts</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+            <span class="k">return</span> <span class="mi">2</span>
+
+        <span class="c"># print version</span>
+        <span class="n">main</span><span class="p">([</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;-V&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;lexer&#39;</span><span class="p">,</span> <span class="s">&#39;formatter&#39;</span><span class="p">,</span> <span class="s">&#39;filter&#39;</span><span class="p">,</span> <span class="s">&#39;style&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">_print_list</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;s&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c"># handle ``pygmentize -H``</span>
+    <span class="n">H_opt</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-H&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">H_opt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opts</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+            <span class="k">return</span> <span class="mi">2</span>
+
+        <span class="n">what</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="k">if</span> <span class="n">what</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;lexer&#39;</span><span class="p">,</span> <span class="s">&#39;formatter&#39;</span><span class="p">,</span> <span class="s">&#39;filter&#39;</span><span class="p">):</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+            <span class="k">return</span> <span class="mi">2</span>
+
+        <span class="n">_print_help</span><span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c"># parse -O options</span>
+    <span class="n">parsed_opts</span> <span class="o">=</span> <span class="n">_parse_options</span><span class="p">(</span><span class="n">O_opts</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-O&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="c"># parse -P options</span>
+    <span class="k">for</span> <span class="n">p_opt</span> <span class="ow">in</span> <span class="n">P_opts</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">p_opt</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">parsed_opts</span><span class="p">[</span><span class="n">p_opt</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parsed_opts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-P&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="c"># handle ``pygmentize -N``</span>
+    <span class="n">infn</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-N&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">infn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">lexer</span> <span class="o">=</span> <span class="n">get_lexer_for_filename</span><span class="p">(</span><span class="n">infn</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">lexer</span> <span class="o">=</span> <span class="n">TextLexer</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">OptionError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="k">print</span> <span class="n">lexer</span><span class="o">.</span><span class="n">aliases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c"># handle ``pygmentize -S``</span>
+    <span class="n">S_opt</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-S&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">a_opt</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-a&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">S_opt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">f_opt</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-f&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">f_opt</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+            <span class="k">return</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">opts</span> <span class="ow">or</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+            <span class="k">return</span> <span class="mi">2</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parsed_opts</span><span class="p">[</span><span class="s">&#39;style&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">S_opt</span>
+            <span class="n">fmter</span> <span class="o">=</span> <span class="n">get_formatter_by_name</span><span class="p">(</span><span class="n">f_opt</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="n">arg</span> <span class="o">=</span> <span class="n">a_opt</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">fmter</span><span class="o">.</span><span class="n">get_style_defs</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c"># if no -S is given, -a is not allowed</span>
+    <span class="k">if</span> <span class="n">a_opt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+        <span class="k">return</span> <span class="mi">2</span>
+
+    <span class="c"># parse -F options</span>
+    <span class="n">F_opts</span> <span class="o">=</span> <span class="n">_parse_filters</span><span class="p">(</span><span class="n">F_opts</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-F&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="c"># select formatter</span>
+    <span class="n">outfn</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-o&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">fmter</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-f&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fmter</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fmter</span> <span class="o">=</span> <span class="n">get_formatter_by_name</span><span class="p">(</span><span class="n">fmter</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">OptionError</span><span class="p">,</span> <span class="n">ClassNotFound</span><span class="p">),</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">outfn</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fmter</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fmter</span> <span class="o">=</span> <span class="n">get_formatter_for_filename</span><span class="p">(</span><span class="n">outfn</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">OptionError</span><span class="p">,</span> <span class="n">ClassNotFound</span><span class="p">),</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">err</span>
+                <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfn</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error: cannot open outfile:&#39;</span><span class="p">,</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fmter</span><span class="p">:</span>
+            <span class="n">fmter</span> <span class="o">=</span> <span class="n">TerminalFormatter</span><span class="p">(</span><span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+
+    <span class="c"># select lexer</span>
+    <span class="n">lexer</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;-l&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lexer</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">lexer</span> <span class="o">=</span> <span class="n">get_lexer_by_name</span><span class="p">(</span><span class="n">lexer</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">OptionError</span><span class="p">,</span> <span class="n">ClassNotFound</span><span class="p">),</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span>
+            <span class="k">return</span> <span class="mi">2</span>
+
+        <span class="n">infn</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">infn</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error: cannot read infile:&#39;</span><span class="p">,</span> <span class="n">err</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lexer</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">lexer</span> <span class="o">=</span> <span class="n">get_lexer_for_filename</span><span class="p">(</span><span class="n">infn</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;-g&#39;</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">lexer</span> <span class="o">=</span> <span class="n">guess_lexer</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+                        <span class="n">lexer</span> <span class="o">=</span> <span class="n">TextLexer</span><span class="p">(</span><span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">err</span>
+                    <span class="k">return</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="n">OptionError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">err</span>
+                <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s">&#39;-g&#39;</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">lexer</span> <span class="o">=</span> <span class="n">guess_lexer</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+                <span class="n">lexer</span> <span class="o">=</span> <span class="n">TextLexer</span><span class="p">(</span><span class="o">**</span><span class="n">parsed_opts</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">lexer</span><span class="p">:</span>
+            <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;Error: no lexer name given and reading &#39;</span> <span class="o">+</span> \
+                                <span class="s">&#39;from stdin (try using -g or -l &lt;lexer&gt;)&#39;</span>
+            <span class="k">return</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c"># No encoding given? Use latin1 if output file given,</span>
+    <span class="c"># stdin/stdout encoding otherwise.</span>
+    <span class="c"># (This is a compromise, I&#39;m not too happy with it...)</span>
+    <span class="k">if</span> <span class="s">&#39;encoding&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parsed_opts</span> <span class="ow">and</span> <span class="s">&#39;outencoding&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parsed_opts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">outfn</span><span class="p">:</span>
+            <span class="c"># encoding pass-through</span>
+            <span class="n">fmter</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="s">&#39;latin1&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
+                <span class="c"># use terminal encoding; Python 3&#39;s terminals already do that</span>
+                <span class="n">lexer</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="s">&#39;encoding&#39;</span><span class="p">,</span>
+                                         <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s">&#39;ascii&#39;</span>
+                <span class="n">fmter</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&#39;encoding&#39;</span><span class="p">,</span>
+                                         <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s">&#39;ascii&#39;</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">outfn</span> <span class="ow">and</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
+        <span class="c"># output to terminal with encoding -&gt; use .buffer</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">buffer</span>
+
+    <span class="c"># ... and do it!</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># process filters</span>
+        <span class="k">for</span> <span class="n">fname</span><span class="p">,</span> <span class="n">fopts</span> <span class="ow">in</span> <span class="n">F_opts</span><span class="p">:</span>
+            <span class="n">lexer</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="o">**</span><span class="n">fopts</span><span class="p">)</span>
+        <span class="n">highlight</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">fmter</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">info</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c"># extract relevant file and position info</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">   (f</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">info</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+        <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#39;*** Error while highlighting:&#39;</span>
+        <span class="k">print</span> <span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">msg</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="mi">0</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" >pygments</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

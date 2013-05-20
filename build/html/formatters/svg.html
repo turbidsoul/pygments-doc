@@ -1,0 +1,158 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.formatters.svg &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.formatters.svg"></span><div class="section" id="pygments-formatters-svg">
+<h1>pygments.formatters.svg<a class="headerlink" href="#pygments-formatters-svg" title="Permalink to this headline">¶</a></h1>
+<p>Formatter for SVG output.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.formatters.svg.SvgFormatter">
+<em class="property">class </em><tt class="descclassname">pygments.formatters.svg.</tt><tt class="descname">SvgFormatter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/formatters/svg.html#SvgFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.formatters.svg.SvgFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format tokens as an SVG graphics file.  This formatter is still experimental.
+Each line of code is a <tt class="docutils literal"><span class="pre">&lt;text&gt;</span></tt> element with explicit <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt>
+coordinates containing <tt class="docutils literal"><span class="pre">&lt;tspan&gt;</span></tt> elements with the individual token styles.</p>
+<p>By default, this formatter outputs a full SVG document including doctype
+declaration and the <tt class="docutils literal"><span class="pre">&lt;svg&gt;</span></tt> root element.</p>
+<p><em>New in Pygments 0.9.</em></p>
+<p>Additional options accepted:</p>
+<dl class="docutils">
+<dt><cite>nowrap</cite></dt>
+<dd>Don&#8217;t wrap the SVG <tt class="docutils literal"><span class="pre">&lt;text&gt;</span></tt> elements in <tt class="docutils literal"><span class="pre">&lt;svg&gt;&lt;g&gt;</span></tt> elements and
+don&#8217;t add a XML declaration and a doctype.  If true, the <cite>fontfamily</cite>
+and <cite>fontsize</cite> options are ignored.  Defaults to <tt class="docutils literal"><span class="pre">False</span></tt>.</dd>
+<dt><cite>fontfamily</cite></dt>
+<dd>The value to give the wrapping <tt class="docutils literal"><span class="pre">&lt;g&gt;</span></tt> element&#8217;s <tt class="docutils literal"><span class="pre">font-family</span></tt>
+attribute, defaults to <tt class="docutils literal"><span class="pre">&quot;monospace&quot;</span></tt>.</dd>
+<dt><cite>fontsize</cite></dt>
+<dd>The value to give the wrapping <tt class="docutils literal"><span class="pre">&lt;g&gt;</span></tt> element&#8217;s <tt class="docutils literal"><span class="pre">font-size</span></tt>
+attribute, defaults to <tt class="docutils literal"><span class="pre">&quot;14px&quot;</span></tt>.</dd>
+<dt><cite>xoffset</cite></dt>
+<dd>Starting offset in X direction, defaults to <tt class="docutils literal"><span class="pre">0</span></tt>.</dd>
+<dt><cite>yoffset</cite></dt>
+<dd>Starting offset in Y direction, defaults to the font size if it is given
+in pixels, or <tt class="docutils literal"><span class="pre">20</span></tt> else.  (This is necessary since text coordinates
+refer to the text baseline, not the top edge.)</dd>
+<dt><cite>ystep</cite></dt>
+<dd>Offset to add to the Y coordinate for each subsequent line.  This should
+roughly be the text size plus 5.  It defaults to that value if the text
+size is given in pixels, or <tt class="docutils literal"><span class="pre">25</span></tt> else.</dd>
+<dt><cite>spacehack</cite></dt>
+<dd>Convert spaces in the source to <tt class="docutils literal"><span class="pre">&amp;#160;</span></tt>, which are non-breaking
+spaces.  SVG provides the <tt class="docutils literal"><span class="pre">xml:space</span></tt> attribute to control how
+whitespace inside tags is handled, in theory, the <tt class="docutils literal"><span class="pre">preserve</span></tt> value
+could be used to keep all whitespace as-is.  However, many current SVG
+viewers don&#8217;t obey that rule, so this option is provided as a workaround
+and defaults to <tt class="docutils literal"><span class="pre">True</span></tt>.</dd>
+</dl>
+<dl class="method">
+<dt id="pygments.formatters.svg.SvgFormatter.format_unencoded">
+<tt class="descname">format_unencoded</tt><big>(</big><em>tokensource</em>, <em>outfile</em><big>)</big><a class="reference internal" href="../_modules/pygments/formatters/svg.html#SvgFormatter.format_unencoded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.formatters.svg.SvgFormatter.format_unencoded" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format <tt class="docutils literal"><span class="pre">tokensource</span></tt>, an iterable of <tt class="docutils literal"><span class="pre">(tokentype,</span> <span class="pre">tokenstring)</span></tt>
+tuples and write it into <tt class="docutils literal"><span class="pre">outfile</span></tt>.</p>
+<p>For our implementation we put all lines in their own &#8216;line group&#8217;.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/formatters/svg.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

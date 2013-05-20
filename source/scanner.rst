@@ -1,0 +1,2 @@
+.. automodule:: pygments.scanner
+    :members:

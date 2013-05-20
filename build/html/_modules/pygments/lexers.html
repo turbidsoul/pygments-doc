@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.lexers &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../index.html" />
+    <link rel="up" title="pygments" href="../pygments.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" accesskey="U">pygments</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.lexers</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.lexers</span>
+<span class="sd">    ~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Pygments lexers.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span>
+
+<span class="kn">from</span> <span class="nn">pygments.lexers._mapping</span> <span class="kn">import</span> <span class="n">LEXERS</span>
+<span class="kn">from</span> <span class="nn">pygments.plugin</span> <span class="kn">import</span> <span class="n">find_plugin_lexers</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">ClassNotFound</span><span class="p">,</span> <span class="nb">bytes</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;get_lexer_by_name&#39;</span><span class="p">,</span> <span class="s">&#39;get_lexer_for_filename&#39;</span><span class="p">,</span> <span class="s">&#39;find_lexer_class&#39;</span><span class="p">,</span>
+           <span class="s">&#39;guess_lexer&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">LEXERS</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+<span class="n">_lexer_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span> <span class="nf">_load_lexers</span><span class="p">(</span><span class="n">module_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a lexer (and all others in the module too).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;__all__&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">lexer_name</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">:</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">lexer_name</span><span class="p">)</span>
+        <span class="n">_lexer_cache</span><span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span>
+
+
+<span class="k">def</span> <span class="nf">get_all_lexers</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a generator of tuples in the form ``(name, aliases,</span>
+<span class="sd">    filenames, mimetypes)`` of all know lexers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">LEXERS</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">for</span> <span class="n">lexer</span> <span class="ow">in</span> <span class="n">find_plugin_lexers</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="n">lexer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">lexer</span><span class="o">.</span><span class="n">aliases</span><span class="p">,</span> <span class="n">lexer</span><span class="o">.</span><span class="n">filenames</span><span class="p">,</span> <span class="n">lexer</span><span class="o">.</span><span class="n">mimetypes</span>
+
+
+<div class="viewcode-block" id="find_lexer_class"><a class="viewcode-back" href="../../lexers/lexers.html#pygments.lexers.find_lexer_class">[docs]</a><span class="k">def</span> <span class="nf">find_lexer_class</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lookup a lexer class by name. Return None if not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_lexer_cache</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_lexer_cache</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="c"># lookup builtin lexers</span>
+    <span class="k">for</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">lname</span><span class="p">,</span> <span class="n">aliases</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">LEXERS</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">lname</span><span class="p">:</span>
+            <span class="n">_load_lexers</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_lexer_cache</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="c"># continue with lexers from setuptools entrypoints</span>
+    <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">find_plugin_lexers</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span>
+
+</div>
+<div class="viewcode-block" id="get_lexer_by_name"><a class="viewcode-back" href="../../lexers/lexers.html#pygments.lexers.get_lexer_by_name">[docs]</a><span class="k">def</span> <span class="nf">get_lexer_by_name</span><span class="p">(</span><span class="n">_alias</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a lexer by an alias.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># lookup builtin lexers</span>
+    <span class="k">for</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">aliases</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">LEXERS</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">_alias</span> <span class="ow">in</span> <span class="n">aliases</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_lexer_cache</span><span class="p">:</span>
+                <span class="n">_load_lexers</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_lexer_cache</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="c"># continue with lexers from setuptools entrypoints</span>
+    <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">find_plugin_lexers</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">_alias</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">aliases</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&#39;no lexer for alias </span><span class="si">%r</span><span class="s"> found&#39;</span> <span class="o">%</span> <span class="n">_alias</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_lexer_for_filename"><a class="viewcode-back" href="../../lexers/lexers.html#pygments.lexers.get_lexer_for_filename">[docs]</a><span class="k">def</span> <span class="nf">get_lexer_for_filename</span><span class="p">(</span><span class="n">_fn</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a lexer for a filename.  If multiple lexers match the filename</span>
+<span class="sd">    pattern, use ``analyze_text()`` to figure out which one is more</span>
+<span class="sd">    appropriate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">modname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">LEXERS</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_lexer_cache</span><span class="p">:</span>
+                    <span class="n">_load_lexers</span><span class="p">(</span><span class="n">modname</span><span class="p">)</span>
+                <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">_lexer_cache</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">filename</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">find_plugin_lexers</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">filenames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+                <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="c"># decode it, since all analyse_text functions expect unicode</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;latin1&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_rating</span><span class="p">(</span><span class="n">info</span><span class="p">):</span>
+        <span class="n">cls</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span>
+        <span class="c"># explicit patterns get a bonus</span>
+        <span class="n">bonus</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filename</span> <span class="ow">and</span> <span class="mf">0.5</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="c"># The class _always_ defines analyse_text because it&#39;s included in</span>
+        <span class="c"># the Lexer class.  The default implementation returns None which</span>
+        <span class="c"># gets turned into 0.0.  Run scripts/detect_missing_analyse_text.py</span>
+        <span class="c"># to find lexers which need it overridden.</span>
+        <span class="k">if</span> <span class="n">code</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="o">+</span> <span class="n">bonus</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">priority</span> <span class="o">+</span> <span class="n">bonus</span>
+
+    <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="n">matches</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">get_rating</span><span class="p">)</span>
+        <span class="c">#print &quot;Possible lexers, after sort:&quot;, matches</span>
+        <span class="k">return</span> <span class="n">matches</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">](</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&#39;no lexer for filename </span><span class="si">%r</span><span class="s"> found&#39;</span> <span class="o">%</span> <span class="n">_fn</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">get_lexer_for_mimetype</span><span class="p">(</span><span class="n">_mime</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a lexer for a mimetype.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">modname</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">mimetypes</span> <span class="ow">in</span> <span class="n">LEXERS</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">_mime</span> <span class="ow">in</span> <span class="n">mimetypes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_lexer_cache</span><span class="p">:</span>
+                <span class="n">_load_lexers</span><span class="p">(</span><span class="n">modname</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_lexer_cache</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">find_plugin_lexers</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">_mime</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">mimetypes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&#39;no lexer for mimetype </span><span class="si">%r</span><span class="s"> found&#39;</span> <span class="o">%</span> <span class="n">_mime</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_iter_lexerclasses</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return an iterator over all lexer classes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">LEXERS</span><span class="p">):</span>
+        <span class="n">module_name</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">LEXERS</span><span class="p">[</span><span class="n">key</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_lexer_cache</span><span class="p">:</span>
+            <span class="n">_load_lexers</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">_lexer_cache</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">lexer</span> <span class="ow">in</span> <span class="n">find_plugin_lexers</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="n">lexer</span>
+
+
+<span class="k">def</span> <span class="nf">guess_lexer_for_filename</span><span class="p">(</span><span class="n">_fn</span><span class="p">,</span> <span class="n">_text</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lookup all lexers that handle those filenames primary (``filenames``)</span>
+<span class="sd">    or secondary (``alias_filenames``). Then run a text analysis for those</span>
+<span class="sd">    lexers and choose the best result.</span>
+
+<span class="sd">    usage::</span>
+
+<span class="sd">        &gt;&gt;&gt; from pygments.lexers import guess_lexer_for_filename</span>
+<span class="sd">        &gt;&gt;&gt; guess_lexer_for_filename(&#39;hello.html&#39;, &#39;&lt;%= @foo %&gt;&#39;)</span>
+<span class="sd">        &lt;pygments.lexers.templates.RhtmlLexer object at 0xb7d2f32c&gt;</span>
+<span class="sd">        &gt;&gt;&gt; guess_lexer_for_filename(&#39;hello.html&#39;, &#39;&lt;h1&gt;{{ title|e }}&lt;/h1&gt;&#39;)</span>
+<span class="sd">        &lt;pygments.lexers.templates.HtmlDjangoLexer object at 0xb7d2f2ac&gt;</span>
+<span class="sd">        &gt;&gt;&gt; guess_lexer_for_filename(&#39;style.css&#39;, &#39;a { color: &lt;?= $link ?&gt; }&#39;)</span>
+<span class="sd">        &lt;pygments.lexers.templates.CssPhpLexer object at 0xb7ba518c&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
+    <span class="n">primary</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">matching_lexers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">lexer</span> <span class="ow">in</span> <span class="n">_iter_lexerclasses</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">lexer</span><span class="o">.</span><span class="n">filenames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+                <span class="n">matching_lexers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lexer</span><span class="p">)</span>
+                <span class="n">primary</span> <span class="o">=</span> <span class="n">lexer</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">lexer</span><span class="o">.</span><span class="n">alias_filenames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+                <span class="n">matching_lexers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lexer</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">matching_lexers</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&#39;no lexer for filename </span><span class="si">%r</span><span class="s"> found&#39;</span> <span class="o">%</span> <span class="n">fn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_lexers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">matching_lexers</span><span class="o">.</span><span class="n">pop</span><span class="p">()(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">lexer</span> <span class="ow">in</span> <span class="n">matching_lexers</span><span class="p">:</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">lexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">_text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">lexer</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rv</span><span class="p">,</span> <span class="n">lexer</span><span class="p">))</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">primary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">primary</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">](</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="guess_lexer"><a class="viewcode-back" href="../../lexers/lexers.html#pygments.lexers.guess_lexer">[docs]</a><span class="k">def</span> <span class="nf">guess_lexer</span><span class="p">(</span><span class="n">_text</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Guess a lexer by strong distinctions in the text (eg, shebang).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">best_lexer</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">lexer</span> <span class="ow">in</span> <span class="n">_iter_lexerclasses</span><span class="p">():</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">lexer</span><span class="o">.</span><span class="n">analyse_text</span><span class="p">(</span><span class="n">_text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">lexer</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rv</span> <span class="o">&gt;</span> <span class="n">best_lexer</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">best_lexer</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">rv</span><span class="p">,</span> <span class="n">lexer</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">best_lexer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">best_lexer</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&#39;no lexer matching the text found&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">best_lexer</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+</div>
+<span class="k">class</span> <span class="nc">_automodule</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Automatically import lexers.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">LEXERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">_load_lexers</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">_lexer_cache</span><span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cls</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="n">oldmod</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;pygments.lexers&#39;</span><span class="p">]</span>
+<span class="n">newmod</span> <span class="o">=</span> <span class="n">_automodule</span><span class="p">(</span><span class="s">&#39;pygments.lexers&#39;</span><span class="p">)</span>
+<span class="n">newmod</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">oldmod</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;pygments.lexers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newmod</span>
+<span class="k">del</span> <span class="n">newmod</span><span class="o">.</span><span class="n">newmod</span><span class="p">,</span> <span class="n">newmod</span><span class="o">.</span><span class="n">oldmod</span><span class="p">,</span> <span class="n">newmod</span><span class="o">.</span><span class="n">sys</span><span class="p">,</span> <span class="n">newmod</span><span class="o">.</span><span class="n">types</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" >pygments</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

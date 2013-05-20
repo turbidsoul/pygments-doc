@@ -1,0 +1,234 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.formatters.rtf &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.formatters" href="../formatters.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" accesskey="U">pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.formatters.rtf</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.formatters.rtf</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    A formatter that generates RTF files.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygments.formatter</span> <span class="kn">import</span> <span class="n">Formatter</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;RtfFormatter&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="RtfFormatter"><a class="viewcode-back" href="../../../formatters/rtf.html#pygments.formatters.rtf.RtfFormatter">[docs]</a><span class="k">class</span> <span class="nc">RtfFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format tokens as RTF markup. This formatter automatically outputs full RTF</span>
+<span class="sd">    documents with color information and other useful stuff. Perfect for Copy and</span>
+<span class="sd">    Paste into Microsoft® Word® documents.</span>
+
+<span class="sd">    *New in Pygments 0.6.*</span>
+
+<span class="sd">    Additional options accepted:</span>
+
+<span class="sd">    `style`</span>
+<span class="sd">        The style to use, can be a string or a Style subclass (default:</span>
+<span class="sd">        ``&#39;default&#39;``).</span>
+
+<span class="sd">    `fontface`</span>
+<span class="sd">        The used font famliy, for example ``Bitstream Vera Sans``. Defaults to</span>
+<span class="sd">        some generic font which is supposed to have fixed width.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;RTF&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;rtf&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.rtf&#39;</span><span class="p">]</span>
+
+    <span class="n">unicodeoutput</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Additional options accepted:</span>
+
+<span class="sd">        ``fontface``</span>
+<span class="sd">            Name of the font used. Could for example be ``&#39;Courier New&#39;``</span>
+<span class="sd">            to further specify the default which is ``&#39;\fmodern&#39;``. The RTF</span>
+<span class="sd">            specification claims that ``\fmodern`` are &quot;Fixed-pitch serif</span>
+<span class="sd">            and sans serif fonts&quot;. Hope every RTF implementation thinks</span>
+<span class="sd">            the same about modern...</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Formatter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fontface</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontface&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_escape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\\\\</span><span class="s">&#39;</span><span class="p">)</span> \
+                   <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">{&#39;</span><span class="p">)</span> \
+                   <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">}&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_escape_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="c"># empty strings, should give a small performance improvment</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;&#39;</span>
+
+        <span class="c"># escape text</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_escape</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s">&#39;utf-16&#39;</span><span class="p">,</span> <span class="s">&#39;utf-32&#39;</span><span class="p">):</span>
+            <span class="n">encoding</span> <span class="o">=</span> <span class="s">&#39;iso-8859-15&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="ow">or</span> <span class="s">&#39;iso-8859-15&#39;</span>
+
+        <span class="n">buf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">128</span><span class="p">:</span>
+                <span class="n">ansic</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="p">,</span> <span class="s">&#39;ignore&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s">&#39;?&#39;</span>
+                <span class="k">if</span> <span class="nb">ord</span><span class="p">(</span><span class="n">ansic</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">128</span><span class="p">:</span>
+                    <span class="n">ansic</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\\\&#39;</span><span class="si">%x</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">ord</span><span class="p">(</span><span class="n">ansic</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ansic</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\ud{\u</span><span class="si">%d%s</span><span class="s">}&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">ansic</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">par</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_unencoded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokensource</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+        <span class="c"># rtf 1.8 header</span>
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">r&#39;{\rtf1\ansi\deff0&#39;</span>
+                      <span class="s">r&#39;{\fonttbl{\f0\fmodern\fprq1\fcharset0</span><span class="si">%s</span><span class="s">;}}&#39;</span>
+                      <span class="s">r&#39;{\colortbl;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fontface</span> <span class="ow">and</span>
+                                        <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_escape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fontface</span><span class="p">)</span> <span class="ow">or</span>
+                                        <span class="s">&#39;&#39;</span><span class="p">))</span>
+
+        <span class="c"># convert colors and save them in a mapping to access them later.</span>
+        <span class="n">color_mapping</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">style</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">color</span> <span class="ow">in</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">],</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;bgcolor&#39;</span><span class="p">],</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;border&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">color</span> <span class="ow">and</span> <span class="n">color</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">color_mapping</span><span class="p">:</span>
+                    <span class="n">color_mapping</span><span class="p">[</span><span class="n">color</span><span class="p">]</span> <span class="o">=</span> <span class="n">offset</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">r&#39;\red</span><span class="si">%d</span><span class="s">\green</span><span class="si">%d</span><span class="s">\blue</span><span class="si">%d</span><span class="s">;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="nb">int</span><span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">16</span><span class="p">),</span>
+                        <span class="nb">int</span><span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="mi">16</span><span class="p">),</span>
+                        <span class="nb">int</span><span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+                    <span class="p">))</span>
+                    <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">r&#39;}\f0&#39;</span><span class="p">)</span>
+
+        <span class="c"># highlight stream</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">tokensource</span><span class="p">:</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">styles_token</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ttype</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+                <span class="n">ttype</span> <span class="o">=</span> <span class="n">ttype</span><span class="o">.</span><span class="n">parent</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">style_for_token</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;bgcolor&#39;</span><span class="p">]:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\cb</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">color_mapping</span><span class="p">[</span><span class="n">style</span><span class="p">[</span><span class="s">&#39;bgcolor&#39;</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\cf</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">color_mapping</span><span class="p">[</span><span class="n">style</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;bold&#39;</span><span class="p">]:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\b&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;italic&#39;</span><span class="p">]:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\i&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;underline&#39;</span><span class="p">]:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\ul&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">style</span><span class="p">[</span><span class="s">&#39;border&#39;</span><span class="p">]:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\chbrdr\chcfpat</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span>
+                           <span class="n">color_mapping</span><span class="p">[</span><span class="n">style</span><span class="p">[</span><span class="s">&#39;border&#39;</span><span class="p">]])</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">start</span><span class="p">:</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{</span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="n">start</span><span class="p">)</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_escape_text</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">start</span><span class="p">:</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)</span>
+
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" >pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

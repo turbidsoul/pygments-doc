@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.formatters &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../index.html" />
+    <link rel="up" title="pygments" href="../pygments.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" accesskey="U">pygments</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.formatters</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.formatters</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Pygments formatters.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+
+<span class="kn">from</span> <span class="nn">pygments.formatters._mapping</span> <span class="kn">import</span> <span class="n">FORMATTERS</span>
+<span class="kn">from</span> <span class="nn">pygments.plugin</span> <span class="kn">import</span> <span class="n">find_plugin_formatters</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">ClassNotFound</span>
+
+<span class="n">ns</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">fcls</span> <span class="ow">in</span> <span class="n">FORMATTERS</span><span class="p">:</span>
+    <span class="n">ns</span><span class="p">[</span><span class="n">fcls</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">fcls</span>
+<span class="k">del</span> <span class="n">fcls</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;get_formatter_by_name&#39;</span><span class="p">,</span> <span class="s">&#39;get_formatter_for_filename&#39;</span><span class="p">,</span>
+           <span class="s">&#39;get_all_formatters&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">__name__</span> <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">FORMATTERS</span><span class="p">]</span>
+
+
+<span class="n">_formatter_alias_cache</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_formatter_filename_cache</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span> <span class="nf">_init_formatter_cache</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">_formatter_alias_cache</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">get_all_formatters</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">aliases</span><span class="p">:</span>
+            <span class="n">_formatter_alias_cache</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span>
+        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">filenames</span><span class="p">:</span>
+            <span class="n">_formatter_filename_cache</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">fn</span><span class="p">,</span> <span class="n">cls</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">find_formatter_class</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="n">_init_formatter_cache</span><span class="p">()</span>
+    <span class="n">cls</span> <span class="o">=</span> <span class="n">_formatter_alias_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cls</span>
+
+
+<span class="k">def</span> <span class="nf">get_formatter_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="n">_init_formatter_cache</span><span class="p">()</span>
+    <span class="n">cls</span> <span class="o">=</span> <span class="n">_formatter_alias_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cls</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&quot;No formatter found for name </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_formatter_for_filename</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="n">_init_formatter_cache</span><span class="p">()</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">_formatter_filename_cache</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&quot;No formatter found for file name </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">fn</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_all_formatters"><a class="viewcode-back" href="../../formatters/formatters.html#pygments.formatters.get_all_formatters">[docs]</a><span class="k">def</span> <span class="nf">get_all_formatters</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return a generator for all formatters.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">formatter</span> <span class="ow">in</span> <span class="n">FORMATTERS</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">formatter</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">formatter</span> <span class="ow">in</span> <span class="n">find_plugin_formatters</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="n">formatter</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" >pygments</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

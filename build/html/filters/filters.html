@@ -1,0 +1,248 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.filters &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.filters"></span><div class="section" id="pygments-filters">
+<h1>pygments.filters<a class="headerlink" href="#pygments-filters" title="Permalink to this headline">¶</a></h1>
+<p>Module containing filter lookup functions and default
+filters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pygments.filters.CodeTagFilter">
+<em class="property">class </em><tt class="descclassname">pygments.filters.</tt><tt class="descname">CodeTagFilter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#CodeTagFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.CodeTagFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Highlight special code tags in comments and docstrings.</p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>codetags</cite> <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
+<dd>A list of strings that are flagged as code tags.  The default is to
+highlight <tt class="docutils literal"><span class="pre">XXX</span></tt>, <tt class="docutils literal"><span class="pre">TODO</span></tt>, <tt class="docutils literal"><span class="pre">BUG</span></tt> and <tt class="docutils literal"><span class="pre">NOTE</span></tt>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.filters.GobbleFilter">
+<em class="property">class </em><tt class="descclassname">pygments.filters.</tt><tt class="descname">GobbleFilter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#GobbleFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.GobbleFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gobbles source code lines (eats initial characters).</p>
+<p>This filter drops the first <tt class="docutils literal"><span class="pre">n</span></tt> characters off every line of code.  This
+may be useful when the source code fed to the lexer is indented by a fixed
+amount of space that isn&#8217;t desired in the output.</p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>n</cite> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>The number of characters to gobble.</dd>
+</dl>
+<p><em>New in Pygments 1.2.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.filters.KeywordCaseFilter">
+<em class="property">class </em><tt class="descclassname">pygments.filters.</tt><tt class="descname">KeywordCaseFilter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#KeywordCaseFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.KeywordCaseFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert keywords to lowercase or uppercase or capitalize them, which
+means first letter uppercase, rest lowercase.</p>
+<p>This can be useful e.g. if you highlight Pascal code and want to adapt the
+code to your styleguide.</p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>case</cite> <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
+<dd>The casing to convert keywords to. Must be one of <tt class="docutils literal"><span class="pre">'lower'</span></tt>,
+<tt class="docutils literal"><span class="pre">'upper'</span></tt> or <tt class="docutils literal"><span class="pre">'capitalize'</span></tt>.  The default is <tt class="docutils literal"><span class="pre">'lower'</span></tt>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.filters.NameHighlightFilter">
+<em class="property">class </em><tt class="descclassname">pygments.filters.</tt><tt class="descname">NameHighlightFilter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#NameHighlightFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.NameHighlightFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Highlight a normal Name token with a different token type.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">filter</span> <span class="o">=</span> <span class="n">NameHighlightFilter</span><span class="p">(</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="s">&#39;bar&#39;</span><span class="p">,</span> <span class="s">&#39;baz&#39;</span><span class="p">],</span>
+    <span class="n">tokentype</span><span class="o">=</span><span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This would highlight the names &#8220;foo&#8221;, &#8220;bar&#8221; and &#8220;baz&#8221;
+as functions. <cite>Name.Function</cite> is the default token type.</p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>names</cite> <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
+<dd>A list of names that should be given the different token type.
+There is no default.</dd>
+<dt><cite>tokentype</cite> <span class="classifier-delimiter">:</span> <span class="classifier">TokenType or string</span></dt>
+<dd>A token type or a string containing a token type name that is
+used for highlighting the strings in <cite>names</cite>.  The default is
+<cite>Name.Function</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.filters.RaiseOnErrorTokenFilter">
+<em class="property">class </em><tt class="descclassname">pygments.filters.</tt><tt class="descname">RaiseOnErrorTokenFilter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#RaiseOnErrorTokenFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.RaiseOnErrorTokenFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception when the lexer generates an error token.</p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>excclass</cite> <span class="classifier-delimiter">:</span> <span class="classifier">Exception class</span></dt>
+<dd>The exception class to raise.
+The default is <cite>pygments.filters.ErrorToken</cite>.</dd>
+</dl>
+<p><em>New in Pygments 0.8.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.filters.TokenMergeFilter">
+<em class="property">class </em><tt class="descclassname">pygments.filters.</tt><tt class="descname">TokenMergeFilter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#TokenMergeFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.TokenMergeFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merges consecutive tokens with the same token type in the output stream of a
+lexer.</p>
+<p><em>New in Pygments 1.2.</em></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.filters.VisibleWhitespaceFilter">
+<em class="property">class </em><tt class="descclassname">pygments.filters.</tt><tt class="descname">VisibleWhitespaceFilter</tt><big>(</big><em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#VisibleWhitespaceFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.VisibleWhitespaceFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert tabs, newlines and/or spaces to visible characters.</p>
+<p>Options accepted:</p>
+<dl class="docutils">
+<dt><cite>spaces</cite> <span class="classifier-delimiter">:</span> <span class="classifier">string or bool</span></dt>
+<dd>If this is a one-character string, spaces will be replaces by this string.
+If it is another true value, spaces will be replaced by <tt class="docutils literal"><span class="pre">·</span></tt> (unicode
+MIDDLE DOT).  If it is a false value, spaces will not be replaced.  The
+default is <tt class="docutils literal"><span class="pre">False</span></tt>.</dd>
+<dt><cite>tabs</cite> <span class="classifier-delimiter">:</span> <span class="classifier">string or bool</span></dt>
+<dd>The same as for <cite>spaces</cite>, but the default replacement character is <tt class="docutils literal"><span class="pre">»</span></tt>
+(unicode RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK).  The default value
+is <tt class="docutils literal"><span class="pre">False</span></tt>.  Note: this will not work if the <cite>tabsize</cite> option for the
+lexer is nonzero, as tabs will already have been expanded then.</dd>
+<dt><cite>tabsize</cite> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>If tabs are to be replaced by this filter (see the <cite>tabs</cite> option), this
+is the total number of characters that a tab should be expanded to.
+The default is <tt class="docutils literal"><span class="pre">8</span></tt>.</dd>
+<dt><cite>newlines</cite> <span class="classifier-delimiter">:</span> <span class="classifier">string or bool</span></dt>
+<dd>The same as for <cite>spaces</cite>, but the default replacement character is <tt class="docutils literal"><span class="pre">¶</span></tt>
+(unicode PILCROW SIGN).  The default value is <tt class="docutils literal"><span class="pre">False</span></tt>.</dd>
+<dt><cite>wstokentype</cite> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If true, give whitespace the special <cite>Whitespace</cite> token type.  This allows
+styling the visible whitespace differently (e.g. greyed out), but it can
+disrupt background colors.  The default is <tt class="docutils literal"><span class="pre">True</span></tt>.</dd>
+</dl>
+<p><em>New in Pygments 0.8.</em></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.filters.find_filter_class">
+<tt class="descclassname">pygments.filters.</tt><tt class="descname">find_filter_class</tt><big>(</big><em>filtername</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#find_filter_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.find_filter_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lookup a filter by name. Return None if not found.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.filters.get_all_filters">
+<tt class="descclassname">pygments.filters.</tt><tt class="descname">get_all_filters</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#get_all_filters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.get_all_filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator of all filter names.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.filters.get_filter_by_name">
+<tt class="descclassname">pygments.filters.</tt><tt class="descname">get_filter_by_name</tt><big>(</big><em>filtername</em>, <em>**options</em><big>)</big><a class="reference internal" href="../_modules/pygments/filters.html#get_filter_by_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.filters.get_filter_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an instantiated filter. Options are passed to the filter
+initializer if wanted. Raise a ClassNotFound if not found.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/filters/filters.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

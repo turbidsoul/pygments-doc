@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pygments</span>
+<span class="sd">    ~~~~~~~~</span>
+
+<span class="sd">    Pygments is a syntax highlighting package written in Python.</span>
+
+<span class="sd">    It is a generic syntax highlighter for general use in all kinds of software</span>
+<span class="sd">    such as forum systems, wikis or other applications that need to prettify</span>
+<span class="sd">    source code. Highlights are:</span>
+
+<span class="sd">    * a wide range of common languages and markup formats is supported</span>
+<span class="sd">    * special attention is paid to details, increasing quality by a fair amount</span>
+<span class="sd">    * support for new languages and formats are added easily</span>
+<span class="sd">    * a number of output formats, presently HTML, LaTeX, RTF, SVG, all image</span>
+<span class="sd">      formats that PIL supports, and ANSI sequences</span>
+<span class="sd">    * it is usable as a command-line tool and as a library</span>
+<span class="sd">    * ... and it highlights even Brainfuck!</span>
+
+<span class="sd">    The `Pygments tip`_ is installable with ``easy_install Pygments==dev``.</span>
+
+<span class="sd">    .. _Pygments tip:</span>
+<span class="sd">       http://bitbucket.org/birkenfeld/pygments-main/get/tip.zip#egg=Pygments-dev</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s">&#39;1.6&#39;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s">&#39;restructuredtext&#39;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;lex&#39;</span><span class="p">,</span> <span class="s">&#39;format&#39;</span><span class="p">,</span> <span class="s">&#39;highlight&#39;</span><span class="p">]</span>
+
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">StringIO</span><span class="p">,</span> <span class="n">BytesIO</span>
+
+
+<div class="viewcode-block" id="lex"><a class="viewcode-back" href="../index.html#pygments.lex">[docs]</a><span class="k">def</span> <span class="nf">lex</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lexer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lex ``code`` with ``lexer`` and return an iterable of tokens.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lexer</span><span class="o">.</span><span class="n">get_tokens</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> \
+           <span class="s">&#39;unbound method get_tokens&#39;</span> <span class="ow">in</span> <span class="n">err</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;lex() argument must be a lexer instance, &#39;</span>
+                            <span class="s">&#39;not a class&#39;</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+</div>
+<div class="viewcode-block" id="format"><a class="viewcode-back" href="../index.html#pygments.format">[docs]</a><span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">formatter</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format a tokenlist ``tokens`` with the formatter ``formatter``.</span>
+
+<span class="sd">    If ``outfile`` is given and a valid file object (an object</span>
+<span class="sd">    with a ``write`` method), the result will be written to it, otherwise</span>
+<span class="sd">    it is returned as a string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">outfile</span><span class="p">:</span>
+            <span class="c">#print formatter, &#39;using&#39;, formatter.encoding</span>
+            <span class="n">realoutfile</span> <span class="o">=</span> <span class="n">formatter</span><span class="o">.</span><span class="n">encoding</span> <span class="ow">and</span> <span class="n">BytesIO</span><span class="p">()</span> <span class="ow">or</span> <span class="n">StringIO</span><span class="p">()</span>
+            <span class="n">formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">realoutfile</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">realoutfile</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> \
+           <span class="s">&#39;unbound method format&#39;</span> <span class="ow">in</span> <span class="n">err</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;format() argument must be a formatter instance, &#39;</span>
+                            <span class="s">&#39;not a class&#39;</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+</div>
+<div class="viewcode-block" id="highlight"><a class="viewcode-back" href="../index.html#pygments.highlight">[docs]</a><span class="k">def</span> <span class="nf">highlight</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">formatter</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lex ``code`` with ``lexer`` and format it with the formatter ``formatter``.</span>
+
+<span class="sd">    If ``outfile`` is given and a valid file object (an object</span>
+<span class="sd">    with a ``write`` method), the result will be written to it, otherwise</span>
+<span class="sd">    it is returned as a string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">format</span><span class="p">(</span><span class="n">lex</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lexer</span><span class="p">),</span> <span class="n">formatter</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pygments.cmdline</span> <span class="kn">import</span> <span class="n">main</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

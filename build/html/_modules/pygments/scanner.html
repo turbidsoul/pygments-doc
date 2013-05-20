@@ -1,0 +1,200 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.scanner &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../index.html" />
+    <link rel="up" title="pygments" href="../pygments.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" accesskey="U">pygments</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.scanner</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.scanner</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    This library implements a regex based scanner. Some languages</span>
+<span class="sd">    like Pascal are easy to parse but have some keywords that</span>
+<span class="sd">    depend on the context. Because of this it&#39;s impossible to lex</span>
+<span class="sd">    that just by using a regular expression lexer like the</span>
+<span class="sd">    `RegexLexer`.</span>
+
+<span class="sd">    Have a look at the `DelphiLexer` to get an idea of how to use</span>
+<span class="sd">    this scanner.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+
+<div class="viewcode-block" id="EndOfText"><a class="viewcode-back" href="../../scanner.html#pygments.scanner.EndOfText">[docs]</a><span class="k">class</span> <span class="nc">EndOfText</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raise if end of text is reached and the user</span>
+<span class="sd">    tried to call a match function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+</div>
+<div class="viewcode-block" id="Scanner"><a class="viewcode-back" href="../../scanner.html#pygments.scanner.Scanner">[docs]</a><span class="k">class</span> <span class="nc">Scanner</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple scanner</span>
+
+<span class="sd">    All method patterns are regular expression strings (not</span>
+<span class="sd">    compiled expressions!)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param text:    The text which should be scanned</span>
+<span class="sd">        :param flags:   default regular expression flags</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_re_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Scanner.eos"><a class="viewcode-back" href="../../scanner.html#pygments.scanner.Scanner.eos">[docs]</a>    <span class="k">def</span> <span class="nf">eos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;`True` if the scanner reached the end of text.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_length</span></div>
+    <span class="n">eos</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">eos</span><span class="p">,</span> <span class="n">eos</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Scanner.check"><a class="viewcode-back" href="../../scanner.html#pygments.scanner.Scanner.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply `pattern` on the current position and return</span>
+<span class="sd">        the match object. (Doesn&#39;t touch pos). Use this for</span>
+<span class="sd">        lookahead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EndOfText</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pattern</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_re_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_re_cache</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_re_cache</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Scanner.test"><a class="viewcode-back" href="../../scanner.html#pygments.scanner.Scanner.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply a pattern on the current position and check</span>
+<span class="sd">        if it patches. Doesn&#39;t touch pos.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Scanner.scan"><a class="viewcode-back" href="../../scanner.html#pygments.scanner.Scanner.scan">[docs]</a>    <span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Scan the text for the given pattern and update pos/match</span>
+<span class="sd">        and related fields. The return value is a boolen that</span>
+<span class="sd">        indicates if the pattern matched. The matched value is</span>
+<span class="sd">        stored on the instance as ``match``, the last value is</span>
+<span class="sd">        stored as ``last``. ``start_pos`` is the position of the</span>
+<span class="sd">        pointer before the pattern was matched, ``pos`` is the</span>
+<span class="sd">        end position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EndOfText</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pattern</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_re_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_re_cache</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flags</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">match</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_re_cache</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Scanner.get_char"><a class="viewcode-back" href="../../scanner.html#pygments.scanner.Scanner.get_char">[docs]</a>    <span class="k">def</span> <span class="nf">get_char</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Scan exactly one char.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;&lt;</span><span class="si">%s</span><span class="s"> </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_length</span>
+        <span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" >pygments</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.token &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../index.html" />
+    <link rel="up" title="pygments" href="../pygments.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" accesskey="U">pygments</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.token</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.token</span>
+<span class="sd">    ~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Basic token types and the standard tokens.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">class</span> <span class="nc">_TokenType</span><span class="p">(</span><span class="nb">tuple</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">buf</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="c"># no need to call super.__init__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subtypes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">val</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span> <span class="ow">and</span>
+            <span class="n">val</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)]</span> <span class="o">==</span> <span class="bp">self</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">():</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">_TokenType</span><span class="p">(</span><span class="bp">self</span> <span class="o">+</span> <span class="p">(</span><span class="n">val</span><span class="p">,))</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subtypes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="n">new</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;Token&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span> <span class="ow">and</span> <span class="s">&#39;.&#39;</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+
+<span class="n">Token</span>       <span class="o">=</span> <span class="n">_TokenType</span><span class="p">()</span>
+
+<span class="c"># Special token types</span>
+<span class="n">Text</span>        <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Text</span>
+<span class="n">Whitespace</span>  <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">Whitespace</span>
+<span class="n">Error</span>       <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Error</span>
+<span class="c"># Text that doesn&#39;t belong to this lexer (e.g. HTML in PHP)</span>
+<span class="n">Other</span>       <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Other</span>
+
+<span class="c"># Common token types for source code</span>
+<span class="n">Keyword</span>     <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Keyword</span>
+<span class="n">Name</span>        <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Name</span>
+<span class="n">Literal</span>     <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Literal</span>
+<span class="n">String</span>      <span class="o">=</span> <span class="n">Literal</span><span class="o">.</span><span class="n">String</span>
+<span class="n">Number</span>      <span class="o">=</span> <span class="n">Literal</span><span class="o">.</span><span class="n">Number</span>
+<span class="n">Punctuation</span> <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Punctuation</span>
+<span class="n">Operator</span>    <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Operator</span>
+<span class="n">Comment</span>     <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Comment</span>
+
+<span class="c"># Generic types for non-source code</span>
+<span class="n">Generic</span>     <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">Generic</span>
+
+<span class="c"># String and some others are not direct childs of Token.</span>
+<span class="c"># alias them:</span>
+<span class="n">Token</span><span class="o">.</span><span class="n">Token</span> <span class="o">=</span> <span class="n">Token</span>
+<span class="n">Token</span><span class="o">.</span><span class="n">String</span> <span class="o">=</span> <span class="n">String</span>
+<span class="n">Token</span><span class="o">.</span><span class="n">Number</span> <span class="o">=</span> <span class="n">Number</span>
+
+
+<div class="viewcode-block" id="is_token_subtype"><a class="viewcode-back" href="../../token.html#pygments.token.is_token_subtype">[docs]</a><span class="k">def</span> <span class="nf">is_token_subtype</span><span class="p">(</span><span class="n">ttype</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return True if ``ttype`` is a subtype of ``other``.</span>
+
+<span class="sd">    exists for backwards compatibility. use ``ttype in other`` now.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ttype</span> <span class="ow">in</span> <span class="n">other</span>
+
+</div>
+<div class="viewcode-block" id="string_to_tokentype"><a class="viewcode-back" href="../../token.html#pygments.token.string_to_tokentype">[docs]</a><span class="k">def</span> <span class="nf">string_to_tokentype</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a string into a token type::</span>
+
+<span class="sd">        &gt;&gt;&gt; string_to_token(&#39;String.Double&#39;)</span>
+<span class="sd">        Token.Literal.String.Double</span>
+<span class="sd">        &gt;&gt;&gt; string_to_token(&#39;Token.Literal.Number&#39;)</span>
+<span class="sd">        Token.Literal.Number</span>
+<span class="sd">        &gt;&gt;&gt; string_to_token(&#39;&#39;)</span>
+<span class="sd">        Token</span>
+
+<span class="sd">    Tokens that are already tokens are returned unchanged:</span>
+
+<span class="sd">        &gt;&gt;&gt; string_to_token(String)</span>
+<span class="sd">        Token.Literal.String</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">_TokenType</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">s</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Token</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">Token</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">node</span>
+
+
+<span class="c"># Map standard token types to short names, used in CSS class naming.</span>
+<span class="c"># If you add a new item, please be sure to run this file to perform</span>
+<span class="c"># a consistency check for duplicate values.</span></div>
+<span class="n">STANDARD_TYPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Token</span><span class="p">:</span>                         <span class="s">&#39;&#39;</span><span class="p">,</span>
+
+    <span class="n">Text</span><span class="p">:</span>                          <span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">Whitespace</span><span class="p">:</span>                    <span class="s">&#39;w&#39;</span><span class="p">,</span>
+    <span class="n">Error</span><span class="p">:</span>                         <span class="s">&#39;err&#39;</span><span class="p">,</span>
+    <span class="n">Other</span><span class="p">:</span>                         <span class="s">&#39;x&#39;</span><span class="p">,</span>
+
+    <span class="n">Keyword</span><span class="p">:</span>                       <span class="s">&#39;k&#39;</span><span class="p">,</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>              <span class="s">&#39;kc&#39;</span><span class="p">,</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Declaration</span><span class="p">:</span>           <span class="s">&#39;kd&#39;</span><span class="p">,</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Namespace</span><span class="p">:</span>             <span class="s">&#39;kn&#39;</span><span class="p">,</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Pseudo</span><span class="p">:</span>                <span class="s">&#39;kp&#39;</span><span class="p">,</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Reserved</span><span class="p">:</span>              <span class="s">&#39;kr&#39;</span><span class="p">,</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">:</span>                  <span class="s">&#39;kt&#39;</span><span class="p">,</span>
+
+    <span class="n">Name</span><span class="p">:</span>                          <span class="s">&#39;n&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">:</span>                <span class="s">&#39;na&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">:</span>                  <span class="s">&#39;nb&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="o">.</span><span class="n">Pseudo</span><span class="p">:</span>           <span class="s">&#39;bp&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">:</span>                    <span class="s">&#39;nc&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>                 <span class="s">&#39;no&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Decorator</span><span class="p">:</span>                <span class="s">&#39;nd&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Entity</span><span class="p">:</span>                   <span class="s">&#39;ni&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Exception</span><span class="p">:</span>                <span class="s">&#39;ne&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>                 <span class="s">&#39;nf&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Property</span><span class="p">:</span>                 <span class="s">&#39;py&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Label</span><span class="p">:</span>                    <span class="s">&#39;nl&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Namespace</span><span class="p">:</span>                <span class="s">&#39;nn&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Other</span><span class="p">:</span>                    <span class="s">&#39;nx&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Tag</span><span class="p">:</span>                      <span class="s">&#39;nt&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">:</span>                 <span class="s">&#39;nv&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">Class</span><span class="p">:</span>           <span class="s">&#39;vc&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">Global</span><span class="p">:</span>          <span class="s">&#39;vg&#39;</span><span class="p">,</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">Instance</span><span class="p">:</span>        <span class="s">&#39;vi&#39;</span><span class="p">,</span>
+
+    <span class="n">Literal</span><span class="p">:</span>                       <span class="s">&#39;l&#39;</span><span class="p">,</span>
+    <span class="n">Literal</span><span class="o">.</span><span class="n">Date</span><span class="p">:</span>                  <span class="s">&#39;ld&#39;</span><span class="p">,</span>
+
+    <span class="n">String</span><span class="p">:</span>                        <span class="s">&#39;s&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Backtick</span><span class="p">:</span>               <span class="s">&#39;sb&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Char</span><span class="p">:</span>                   <span class="s">&#39;sc&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Doc</span><span class="p">:</span>                    <span class="s">&#39;sd&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Double</span><span class="p">:</span>                 <span class="s">&#39;s2&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Escape</span><span class="p">:</span>                 <span class="s">&#39;se&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Heredoc</span><span class="p">:</span>                <span class="s">&#39;sh&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Interpol</span><span class="p">:</span>               <span class="s">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Other</span><span class="p">:</span>                  <span class="s">&#39;sx&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Regex</span><span class="p">:</span>                  <span class="s">&#39;sr&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Single</span><span class="p">:</span>                 <span class="s">&#39;s1&#39;</span><span class="p">,</span>
+    <span class="n">String</span><span class="o">.</span><span class="n">Symbol</span><span class="p">:</span>                 <span class="s">&#39;ss&#39;</span><span class="p">,</span>
+
+    <span class="n">Number</span><span class="p">:</span>                        <span class="s">&#39;m&#39;</span><span class="p">,</span>
+    <span class="n">Number</span><span class="o">.</span><span class="n">Float</span><span class="p">:</span>                  <span class="s">&#39;mf&#39;</span><span class="p">,</span>
+    <span class="n">Number</span><span class="o">.</span><span class="n">Hex</span><span class="p">:</span>                    <span class="s">&#39;mh&#39;</span><span class="p">,</span>
+    <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="p">:</span>                <span class="s">&#39;mi&#39;</span><span class="p">,</span>
+    <span class="n">Number</span><span class="o">.</span><span class="n">Integer</span><span class="o">.</span><span class="n">Long</span><span class="p">:</span>           <span class="s">&#39;il&#39;</span><span class="p">,</span>
+    <span class="n">Number</span><span class="o">.</span><span class="n">Oct</span><span class="p">:</span>                    <span class="s">&#39;mo&#39;</span><span class="p">,</span>
+
+    <span class="n">Operator</span><span class="p">:</span>                      <span class="s">&#39;o&#39;</span><span class="p">,</span>
+    <span class="n">Operator</span><span class="o">.</span><span class="n">Word</span><span class="p">:</span>                 <span class="s">&#39;ow&#39;</span><span class="p">,</span>
+
+    <span class="n">Punctuation</span><span class="p">:</span>                   <span class="s">&#39;p&#39;</span><span class="p">,</span>
+
+    <span class="n">Comment</span><span class="p">:</span>                       <span class="s">&#39;c&#39;</span><span class="p">,</span>
+    <span class="n">Comment</span><span class="o">.</span><span class="n">Multiline</span><span class="p">:</span>             <span class="s">&#39;cm&#39;</span><span class="p">,</span>
+    <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">:</span>               <span class="s">&#39;cp&#39;</span><span class="p">,</span>
+    <span class="n">Comment</span><span class="o">.</span><span class="n">Single</span><span class="p">:</span>                <span class="s">&#39;c1&#39;</span><span class="p">,</span>
+    <span class="n">Comment</span><span class="o">.</span><span class="n">Special</span><span class="p">:</span>               <span class="s">&#39;cs&#39;</span><span class="p">,</span>
+
+    <span class="n">Generic</span><span class="p">:</span>                       <span class="s">&#39;g&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Deleted</span><span class="p">:</span>               <span class="s">&#39;gd&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Emph</span><span class="p">:</span>                  <span class="s">&#39;ge&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>                 <span class="s">&#39;gr&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Heading</span><span class="p">:</span>               <span class="s">&#39;gh&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span>              <span class="s">&#39;gi&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Output</span><span class="p">:</span>                <span class="s">&#39;go&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Prompt</span><span class="p">:</span>                <span class="s">&#39;gp&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Strong</span><span class="p">:</span>                <span class="s">&#39;gs&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Subheading</span><span class="p">:</span>            <span class="s">&#39;gu&#39;</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Traceback</span><span class="p">:</span>             <span class="s">&#39;gt&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" >pygments</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

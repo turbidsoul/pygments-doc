@@ -1,0 +1,135 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.token &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.token"></span><div class="section" id="pygments-token">
+<h1>pygments.token<a class="headerlink" href="#pygments-token" title="Permalink to this headline">¶</a></h1>
+<p>Basic token types and the standard tokens.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="pygments.token.is_token_subtype">
+<tt class="descclassname">pygments.token.</tt><tt class="descname">is_token_subtype</tt><big>(</big><em>ttype</em>, <em>other</em><big>)</big><a class="reference internal" href="_modules/pygments/token.html#is_token_subtype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.token.is_token_subtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if <tt class="docutils literal"><span class="pre">ttype</span></tt> is a subtype of <tt class="docutils literal"><span class="pre">other</span></tt>.</p>
+<p>exists for backwards compatibility. use <tt class="docutils literal"><span class="pre">ttype</span> <span class="pre">in</span> <span class="pre">other</span></tt> now.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.token.string_to_tokentype">
+<tt class="descclassname">pygments.token.</tt><tt class="descname">string_to_tokentype</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/pygments/token.html#string_to_tokentype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.token.string_to_tokentype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a string into a token type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">string_to_token</span><span class="p">(</span><span class="s">&#39;String.Double&#39;</span><span class="p">)</span>
+<span class="go">Token.Literal.String.Double</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">string_to_token</span><span class="p">(</span><span class="s">&#39;Token.Literal.Number&#39;</span><span class="p">)</span>
+<span class="go">Token.Literal.Number</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">string_to_token</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+<span class="go">Token</span>
+</pre></div>
+</div>
+<p>Tokens that are already tokens are returned unchanged:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">string_to_token</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+<span class="go">Token.Literal.String</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/token.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

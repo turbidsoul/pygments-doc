@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.formatters.svg &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.formatters" href="../formatters.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" accesskey="U">pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.formatters.svg</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.formatters.svg</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Formatter for SVG output.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygments.formatter</span> <span class="kn">import</span> <span class="n">Formatter</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">get_bool_opt</span><span class="p">,</span> <span class="n">get_int_opt</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;SvgFormatter&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">escape_html</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Escape &amp;, &lt;, &gt; as well as single and double quotes for HTML.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;amp;&#39;</span><span class="p">)</span><span class="o">.</span>  \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;lt;&#39;</span><span class="p">)</span><span class="o">.</span>   \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;gt;&#39;</span><span class="p">)</span><span class="o">.</span>   \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;quot;&#39;</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s">&#39;&amp;#39;&#39;</span><span class="p">)</span>
+
+
+<span class="n">class2style</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="SvgFormatter"><a class="viewcode-back" href="../../../formatters/svg.html#pygments.formatters.svg.SvgFormatter">[docs]</a><span class="k">class</span> <span class="nc">SvgFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format tokens as an SVG graphics file.  This formatter is still experimental.</span>
+<span class="sd">    Each line of code is a ``&lt;text&gt;`` element with explicit ``x`` and ``y``</span>
+<span class="sd">    coordinates containing ``&lt;tspan&gt;`` elements with the individual token styles.</span>
+
+<span class="sd">    By default, this formatter outputs a full SVG document including doctype</span>
+<span class="sd">    declaration and the ``&lt;svg&gt;`` root element.</span>
+
+<span class="sd">    *New in Pygments 0.9.*</span>
+
+<span class="sd">    Additional options accepted:</span>
+
+<span class="sd">    `nowrap`</span>
+<span class="sd">        Don&#39;t wrap the SVG ``&lt;text&gt;`` elements in ``&lt;svg&gt;&lt;g&gt;`` elements and</span>
+<span class="sd">        don&#39;t add a XML declaration and a doctype.  If true, the `fontfamily`</span>
+<span class="sd">        and `fontsize` options are ignored.  Defaults to ``False``.</span>
+
+<span class="sd">    `fontfamily`</span>
+<span class="sd">        The value to give the wrapping ``&lt;g&gt;`` element&#39;s ``font-family``</span>
+<span class="sd">        attribute, defaults to ``&quot;monospace&quot;``.</span>
+
+<span class="sd">    `fontsize`</span>
+<span class="sd">        The value to give the wrapping ``&lt;g&gt;`` element&#39;s ``font-size``</span>
+<span class="sd">        attribute, defaults to ``&quot;14px&quot;``.</span>
+
+<span class="sd">    `xoffset`</span>
+<span class="sd">        Starting offset in X direction, defaults to ``0``.</span>
+
+<span class="sd">    `yoffset`</span>
+<span class="sd">        Starting offset in Y direction, defaults to the font size if it is given</span>
+<span class="sd">        in pixels, or ``20`` else.  (This is necessary since text coordinates</span>
+<span class="sd">        refer to the text baseline, not the top edge.)</span>
+
+<span class="sd">    `ystep`</span>
+<span class="sd">        Offset to add to the Y coordinate for each subsequent line.  This should</span>
+<span class="sd">        roughly be the text size plus 5.  It defaults to that value if the text</span>
+<span class="sd">        size is given in pixels, or ``25`` else.</span>
+
+<span class="sd">    `spacehack`</span>
+<span class="sd">        Convert spaces in the source to ``&amp;#160;``, which are non-breaking</span>
+<span class="sd">        spaces.  SVG provides the ``xml:space`` attribute to control how</span>
+<span class="sd">        whitespace inside tags is handled, in theory, the ``preserve`` value</span>
+<span class="sd">        could be used to keep all whitespace as-is.  However, many current SVG</span>
+<span class="sd">        viewers don&#39;t obey that rule, so this option is provided as a workaround</span>
+<span class="sd">        and defaults to ``True``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;SVG&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;svg&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.svg&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="c"># XXX outencoding</span>
+        <span class="n">Formatter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nowrap</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;nowrap&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fontfamily</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontfamily&#39;</span><span class="p">,</span> <span class="s">&#39;monospace&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fontsize</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;fontsize&#39;</span><span class="p">,</span> <span class="s">&#39;14px&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xoffset</span> <span class="o">=</span> <span class="n">get_int_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;xoffset&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">fs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fontsize</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fs</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;px&#39;</span><span class="p">):</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">int_fs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">int_fs</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yoffset</span> <span class="o">=</span> <span class="n">get_int_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;yoffset&#39;</span><span class="p">,</span> <span class="n">int_fs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ystep</span> <span class="o">=</span> <span class="n">get_int_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;ystep&#39;</span><span class="p">,</span> <span class="n">int_fs</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spacehack</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;spacehack&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stylecache</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="SvgFormatter.format_unencoded"><a class="viewcode-back" href="../../../formatters/svg.html#pygments.formatters.svg.SvgFormatter.format_unencoded">[docs]</a>    <span class="k">def</span> <span class="nf">format_unencoded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokensource</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Format ``tokensource``, an iterable of ``(tokentype, tokenstring)``</span>
+<span class="sd">        tuples and write it into ``outfile``.</span>
+
+<span class="sd">        For our implementation we put all lines in their own &#39;line group&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xoffset</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yoffset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">nowrap</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;?xml version=&quot;1.0&quot; encoding=&quot;</span><span class="si">%s</span><span class="s">&quot;?&gt;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;?xml version=&quot;1.0&quot;?&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;!DOCTYPE svg PUBLIC &quot;-//W3C//DTD SVG 1.0//EN&quot; &#39;</span>
+                          <span class="s">&#39;&quot;http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/&#39;</span>
+                          <span class="s">&#39;svg10.dtd&quot;&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;g font-family=&quot;</span><span class="si">%s</span><span class="s">&quot; font-size=&quot;</span><span class="si">%s</span><span class="s">&quot;&gt;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span>
+                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fontfamily</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fontsize</span><span class="p">))</span>
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;text x=&quot;</span><span class="si">%s</span><span class="s">&quot; y=&quot;</span><span class="si">%s</span><span class="s">&quot; xml:space=&quot;preserve&quot;&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">tokensource</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_style</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span>
+            <span class="n">tspan</span> <span class="o">=</span> <span class="n">style</span> <span class="ow">and</span> <span class="s">&#39;&lt;tspan&#39;</span> <span class="o">+</span> <span class="n">style</span> <span class="o">+</span> <span class="s">&#39;&gt;&#39;</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span>
+            <span class="n">tspanend</span> <span class="o">=</span> <span class="n">tspan</span> <span class="ow">and</span> <span class="s">&#39;&lt;/tspan&gt;&#39;</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">escape_html</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spacehack</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">expandtabs</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;&amp;#160;&#39;</span><span class="p">)</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tspan</span> <span class="o">+</span> <span class="n">part</span> <span class="o">+</span> <span class="n">tspanend</span><span class="p">)</span>
+                <span class="n">y</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ystep</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;/text&gt;</span><span class="se">\n</span><span class="s">&lt;text x=&quot;</span><span class="si">%s</span><span class="s">&quot; y=&quot;</span><span class="si">%s</span><span class="s">&quot; &#39;</span>
+                              <span class="s">&#39;xml:space=&quot;preserve&quot;&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tspan</span> <span class="o">+</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tspanend</span><span class="p">)</span>
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;/text&gt;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">nowrap</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&lt;/g&gt;&lt;/svg&gt;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokentype</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tokentype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stylecache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stylecache</span><span class="p">[</span><span class="n">tokentype</span><span class="p">]</span>
+        <span class="n">otokentype</span> <span class="o">=</span> <span class="n">tokentype</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">styles_token</span><span class="p">(</span><span class="n">tokentype</span><span class="p">):</span>
+            <span class="n">tokentype</span> <span class="o">=</span> <span class="n">tokentype</span><span class="o">.</span><span class="n">parent</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">style_for_token</span><span class="p">(</span><span class="n">tokentype</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="s">&#39; fill=&quot;#&#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;&quot;&#39;</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;bold&#39;</span><span class="p">]:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s">&#39; font-weight=&quot;bold&quot;&#39;</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s">&#39;italic&#39;</span><span class="p">]:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s">&#39; font-style=&quot;italic&quot;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stylecache</span><span class="p">[</span><span class="n">otokentype</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" >pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

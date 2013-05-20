@@ -1,0 +1,2 @@
+.. automodule:: pygments.filters
+    :members:

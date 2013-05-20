@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.formatters.terminal &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.formatters" href="../formatters.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" accesskey="U">pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.formatters.terminal</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.formatters.terminal</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Formatter for terminal output with ANSI sequences.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">pygments.formatter</span> <span class="kn">import</span> <span class="n">Formatter</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Error</span><span class="p">,</span> \
+     <span class="n">Number</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Token</span><span class="p">,</span> <span class="n">Whitespace</span>
+<span class="kn">from</span> <span class="nn">pygments.console</span> <span class="kn">import</span> <span class="n">ansiformat</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">get_choice_opt</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;TerminalFormatter&#39;</span><span class="p">]</span>
+
+
+<span class="c">#: Map token types to a tuple of color values for light and dark</span>
+<span class="c">#: backgrounds.</span>
+<span class="n">TERMINAL_COLORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Token</span><span class="p">:</span>              <span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>            <span class="s">&#39;&#39;</span><span class="p">),</span>
+
+    <span class="n">Whitespace</span><span class="p">:</span>         <span class="p">(</span><span class="s">&#39;lightgray&#39;</span><span class="p">,</span>   <span class="s">&#39;darkgray&#39;</span><span class="p">),</span>
+    <span class="n">Comment</span><span class="p">:</span>            <span class="p">(</span><span class="s">&#39;lightgray&#39;</span><span class="p">,</span>   <span class="s">&#39;darkgray&#39;</span><span class="p">),</span>
+    <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">:</span>    <span class="p">(</span><span class="s">&#39;teal&#39;</span><span class="p">,</span>        <span class="s">&#39;turquoise&#39;</span><span class="p">),</span>
+    <span class="n">Keyword</span><span class="p">:</span>            <span class="p">(</span><span class="s">&#39;darkblue&#39;</span><span class="p">,</span>    <span class="s">&#39;blue&#39;</span><span class="p">),</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">:</span>       <span class="p">(</span><span class="s">&#39;teal&#39;</span><span class="p">,</span>        <span class="s">&#39;turquoise&#39;</span><span class="p">),</span>
+    <span class="n">Operator</span><span class="o">.</span><span class="n">Word</span><span class="p">:</span>      <span class="p">(</span><span class="s">&#39;purple&#39;</span><span class="p">,</span>      <span class="s">&#39;fuchsia&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">:</span>       <span class="p">(</span><span class="s">&#39;teal&#39;</span><span class="p">,</span>        <span class="s">&#39;turquoise&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>      <span class="p">(</span><span class="s">&#39;darkgreen&#39;</span><span class="p">,</span>   <span class="s">&#39;green&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Namespace</span><span class="p">:</span>     <span class="p">(</span><span class="s">&#39;_teal_&#39;</span><span class="p">,</span>      <span class="s">&#39;_turquoise_&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">:</span>         <span class="p">(</span><span class="s">&#39;_darkgreen_&#39;</span><span class="p">,</span> <span class="s">&#39;_green_&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Exception</span><span class="p">:</span>     <span class="p">(</span><span class="s">&#39;teal&#39;</span><span class="p">,</span>        <span class="s">&#39;turquoise&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Decorator</span><span class="p">:</span>     <span class="p">(</span><span class="s">&#39;darkgray&#39;</span><span class="p">,</span>    <span class="s">&#39;lightgray&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">:</span>      <span class="p">(</span><span class="s">&#39;darkred&#39;</span><span class="p">,</span>     <span class="s">&#39;red&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>      <span class="p">(</span><span class="s">&#39;darkred&#39;</span><span class="p">,</span>     <span class="s">&#39;red&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">:</span>     <span class="p">(</span><span class="s">&#39;teal&#39;</span><span class="p">,</span>        <span class="s">&#39;turquoise&#39;</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Tag</span><span class="p">:</span>           <span class="p">(</span><span class="s">&#39;blue&#39;</span><span class="p">,</span>        <span class="s">&#39;blue&#39;</span><span class="p">),</span>
+    <span class="n">String</span><span class="p">:</span>             <span class="p">(</span><span class="s">&#39;brown&#39;</span><span class="p">,</span>       <span class="s">&#39;brown&#39;</span><span class="p">),</span>
+    <span class="n">Number</span><span class="p">:</span>             <span class="p">(</span><span class="s">&#39;darkblue&#39;</span><span class="p">,</span>    <span class="s">&#39;blue&#39;</span><span class="p">),</span>
+
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Deleted</span><span class="p">:</span>    <span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span>        <span class="s">&#39;red&#39;</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span>   <span class="p">(</span><span class="s">&#39;darkgreen&#39;</span><span class="p">,</span>  <span class="s">&#39;green&#39;</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Heading</span><span class="p">:</span>    <span class="p">(</span><span class="s">&#39;**&#39;</span><span class="p">,</span>         <span class="s">&#39;**&#39;</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Subheading</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;*purple*&#39;</span><span class="p">,</span>   <span class="s">&#39;*fuchsia*&#39;</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>      <span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">,</span>        <span class="s">&#39;red&#39;</span><span class="p">),</span>
+
+    <span class="n">Error</span><span class="p">:</span>              <span class="p">(</span><span class="s">&#39;_red_&#39;</span><span class="p">,</span>      <span class="s">&#39;_red_&#39;</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="TerminalFormatter"><a class="viewcode-back" href="../../../formatters/terminal.html#pygments.formatters.terminal.TerminalFormatter">[docs]</a><span class="k">class</span> <span class="nc">TerminalFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Format tokens with ANSI color sequences, for output in a text console.</span>
+<span class="sd">    Color sequences are terminated at newlines, so that paging the output</span>
+<span class="sd">    works correctly.</span>
+
+<span class="sd">    The `get_style_defs()` method doesn&#39;t do anything special since there is</span>
+<span class="sd">    no support for common styles.</span>
+
+<span class="sd">    Options accepted:</span>
+
+<span class="sd">    `bg`</span>
+<span class="sd">        Set to ``&quot;light&quot;`` or ``&quot;dark&quot;`` depending on the terminal&#39;s background</span>
+<span class="sd">        (default: ``&quot;light&quot;``).</span>
+
+<span class="sd">    `colorscheme`</span>
+<span class="sd">        A dictionary mapping token types to (lightbg, darkbg) color names or</span>
+<span class="sd">        ``None`` (default: ``None`` = use builtin colorscheme).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Terminal&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;terminal&#39;</span><span class="p">,</span> <span class="s">&#39;console&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Formatter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">darkbg</span> <span class="o">=</span> <span class="n">get_choice_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;bg&#39;</span><span class="p">,</span>
+                                     <span class="p">[</span><span class="s">&#39;light&#39;</span><span class="p">,</span> <span class="s">&#39;dark&#39;</span><span class="p">],</span> <span class="s">&#39;light&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;dark&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colorscheme</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;colorscheme&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">TERMINAL_COLORS</span>
+
+    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokensource</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+        <span class="c"># hack: if the output is a terminal and has an encoding set,</span>
+        <span class="c"># use that to avoid unicode encode problems</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;encoding&quot;</span><span class="p">)</span> <span class="ow">and</span> \
+           <span class="nb">hasattr</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;isatty&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">outfile</span><span class="o">.</span><span class="n">isatty</span><span class="p">()</span> <span class="ow">and</span> \
+           <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">outfile</span><span class="o">.</span><span class="n">encoding</span>
+        <span class="k">return</span> <span class="n">Formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokensource</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_unencoded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokensource</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">tokensource</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colorscheme</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">color</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">ttype</span> <span class="o">=</span> <span class="n">ttype</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colorscheme</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">color</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">darkbg</span><span class="p">]</span>
+                <span class="n">spl</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">spl</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ansiformat</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ansiformat</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" >pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

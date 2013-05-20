@@ -1,0 +1,476 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.formatters.latex &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.formatters" href="../formatters.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" accesskey="U">pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.formatters.latex</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.formatters.latex</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Formatter for LaTeX fancyvrb output.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygments.formatter</span> <span class="kn">import</span> <span class="n">Formatter</span>
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">Token</span><span class="p">,</span> <span class="n">STANDARD_TYPES</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">get_bool_opt</span><span class="p">,</span> <span class="n">get_int_opt</span><span class="p">,</span> <span class="n">StringIO</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;LatexFormatter&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">escape_tex</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">commandprefix</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\x00</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\x02</span><span class="s">&#39;</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x00</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zbs{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zob{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x02</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zcb{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;^&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zca{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zus{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zam{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zlt{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zgt{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zsh{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;%&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zpc{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;$&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zdl{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zhy{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zsq{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zdq{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span><span class="o">.</span> \
+                <span class="n">replace</span><span class="p">(</span><span class="s">&#39;~&#39;</span><span class="p">,</span> <span class="s">r&#39;\</span><span class="si">%s</span><span class="s">Zti{}&#39;</span> <span class="o">%</span> <span class="n">commandprefix</span><span class="p">)</span>
+
+
+<span class="n">DOC_TEMPLATE</span> <span class="o">=</span> <span class="s">r&#39;&#39;&#39;</span>
+<span class="s">\documentclass{</span><span class="si">%(docclass)s</span><span class="s">}</span>
+<span class="s">\usepackage{fancyvrb}</span>
+<span class="s">\usepackage{color}</span>
+<span class="s">\usepackage[</span><span class="si">%(encoding)s</span><span class="s">]{inputenc}</span>
+<span class="si">%(preamble)s</span><span class="s"></span>
+
+<span class="si">%(styledefs)s</span><span class="s"></span>
+
+<span class="s">\begin{document}</span>
+
+<span class="s">\section*{</span><span class="si">%(title)s</span><span class="s">}</span>
+
+<span class="si">%(code)s</span><span class="s"></span>
+<span class="s">\end{document}</span>
+<span class="s">&#39;&#39;&#39;</span>
+
+<span class="c">## Small explanation of the mess below :)</span>
+<span class="c">#</span>
+<span class="c"># The previous version of the LaTeX formatter just assigned a command to</span>
+<span class="c"># each token type defined in the current style.  That obviously is</span>
+<span class="c"># problematic if the highlighted code is produced for a different style</span>
+<span class="c"># than the style commands themselves.</span>
+<span class="c">#</span>
+<span class="c"># This version works much like the HTML formatter which assigns multiple</span>
+<span class="c"># CSS classes to each &lt;span&gt; tag, from the most specific to the least</span>
+<span class="c"># specific token type, thus falling back to the parent token type if one</span>
+<span class="c"># is not defined.  Here, the classes are there too and use the same short</span>
+<span class="c"># forms given in token.STANDARD_TYPES.</span>
+<span class="c">#</span>
+<span class="c"># Highlighted code now only uses one custom command, which by default is</span>
+<span class="c"># \PY and selectable by the commandprefix option (and in addition the</span>
+<span class="c"># escapes \PYZat, \PYZlb and \PYZrb which haven&#39;t been renamed for</span>
+<span class="c"># backwards compatibility purposes).</span>
+<span class="c">#</span>
+<span class="c"># \PY has two arguments: the classes, separated by +, and the text to</span>
+<span class="c"># render in that style.  The classes are resolved into the respective</span>
+<span class="c"># style commands by magic, which serves to ignore unknown classes.</span>
+<span class="c">#</span>
+<span class="c"># The magic macros are:</span>
+<span class="c"># * \PY@it, \PY@bf, etc. are unconditionally wrapped around the text</span>
+<span class="c">#   to render in \PY@do.  Their definition determines the style.</span>
+<span class="c"># * \PY@reset resets \PY@it etc. to do nothing.</span>
+<span class="c"># * \PY@toks parses the list of classes, using magic inspired by the</span>
+<span class="c">#   keyval package (but modified to use plusses instead of commas</span>
+<span class="c">#   because fancyvrb redefines commas inside its environments).</span>
+<span class="c"># * \PY@tok processes one class, calling the \PY@tok@classname command</span>
+<span class="c">#   if it exists.</span>
+<span class="c"># * \PY@tok@classname sets the \PY@it etc. to reflect the chosen style</span>
+<span class="c">#   for its class.</span>
+<span class="c"># * \PY resets the style, parses the classnames and then calls \PY@do.</span>
+<span class="c">#</span>
+<span class="c"># Tip: to read this code, print it out in substituted form using e.g.</span>
+<span class="c"># &gt;&gt;&gt; print STYLE_TEMPLATE % {&#39;cp&#39;: &#39;PY&#39;}</span>
+
+<span class="n">STYLE_TEMPLATE</span> <span class="o">=</span> <span class="s">r&#39;&#39;&#39;</span>
+<span class="s">\makeatletter</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">@reset{\let\</span><span class="si">%(cp)s</span><span class="s">@it=\relax \let\</span><span class="si">%(cp)s</span><span class="s">@bf=\relax</span><span class="si">%%</span><span class="s"></span>
+<span class="s">    \let\</span><span class="si">%(cp)s</span><span class="s">@ul=\relax \let\</span><span class="si">%(cp)s</span><span class="s">@tc=\relax</span><span class="si">%%</span><span class="s"></span>
+<span class="s">    \let\</span><span class="si">%(cp)s</span><span class="s">@bc=\relax \let\</span><span class="si">%(cp)s</span><span class="s">@ff=\relax}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">@tok#1{\csname </span><span class="si">%(cp)s</span><span class="s">@tok@#1\endcsname}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">@toks#1+{\ifx\relax#1\empty\else</span><span class="si">%%</span><span class="s"></span>
+<span class="s">    \</span><span class="si">%(cp)s</span><span class="s">@tok{#1}\expandafter\</span><span class="si">%(cp)s</span><span class="s">@toks\fi}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">@do#1{\</span><span class="si">%(cp)s</span><span class="s">@bc{\</span><span class="si">%(cp)s</span><span class="s">@tc{\</span><span class="si">%(cp)s</span><span class="s">@ul{</span><span class="si">%%</span><span class="s"></span>
+<span class="s">    \</span><span class="si">%(cp)s</span><span class="s">@it{\</span><span class="si">%(cp)s</span><span class="s">@bf{\</span><span class="si">%(cp)s</span><span class="s">@ff{#1}}}}}}}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">#1#2{\</span><span class="si">%(cp)s</span><span class="s">@reset\</span><span class="si">%(cp)s</span><span class="s">@toks#1+\relax+\</span><span class="si">%(cp)s</span><span class="s">@do{#2}}</span>
+
+<span class="si">%(styles)s</span><span class="s"></span>
+
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zbs{\char`\\}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zus{\char`\_}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zob{\char`\{}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zcb{\char`\}}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zca{\char`\^}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zam{\char`\&amp;}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zlt{\char`\&lt;}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zgt{\char`\&gt;}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zsh{\char`\#}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zpc{\char`\</span><span class="si">%%</span><span class="s">}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zdl{\char`\$}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zhy{\char`\-}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zsq{\char`\&#39;}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zdq{\char`\&quot;}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zti{\char`\~}</span>
+<span class="si">%%</span><span class="s"> for compatibility with earlier versions</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zat{@}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zlb{[}</span>
+<span class="s">\def\</span><span class="si">%(cp)s</span><span class="s">Zrb{]}</span>
+<span class="s">\makeatother</span>
+<span class="s">&#39;&#39;&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_get_ttype_name</span><span class="p">(</span><span class="n">ttype</span><span class="p">):</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">STANDARD_TYPES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fname</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fname</span>
+    <span class="n">aname</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">while</span> <span class="n">fname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">aname</span> <span class="o">=</span> <span class="n">ttype</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">aname</span>
+        <span class="n">ttype</span> <span class="o">=</span> <span class="n">ttype</span><span class="o">.</span><span class="n">parent</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">STANDARD_TYPES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fname</span> <span class="o">+</span> <span class="n">aname</span>
+
+
+<div class="viewcode-block" id="LatexFormatter"><a class="viewcode-back" href="../../../formatters/latex.html#pygments.formatters.latex.LatexFormatter">[docs]</a><span class="k">class</span> <span class="nc">LatexFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Format tokens as LaTeX code. This needs the `fancyvrb` and `color`</span>
+<span class="sd">    standard packages.</span>
+
+<span class="sd">    Without the `full` option, code is formatted as one ``Verbatim``</span>
+<span class="sd">    environment, like this:</span>
+
+<span class="sd">    .. sourcecode:: latex</span>
+
+<span class="sd">        \begin{Verbatim}[commandchars=\\{\}]</span>
+<span class="sd">        \PY{k}{def }\PY{n+nf}{foo}(\PY{n}{bar}):</span>
+<span class="sd">            \PY{k}{pass}</span>
+<span class="sd">        \end{Verbatim}</span>
+
+<span class="sd">    The special command used here (``\PY``) and all the other macros it needs</span>
+<span class="sd">    are output by the `get_style_defs` method.</span>
+
+<span class="sd">    With the `full` option, a complete LaTeX document is output, including</span>
+<span class="sd">    the command definitions in the preamble.</span>
+
+<span class="sd">    The `get_style_defs()` method of a `LatexFormatter` returns a string</span>
+<span class="sd">    containing ``\def`` commands defining the macros needed inside the</span>
+<span class="sd">    ``Verbatim`` environments.</span>
+
+<span class="sd">    Additional options accepted:</span>
+
+<span class="sd">    `style`</span>
+<span class="sd">        The style to use, can be a string or a Style subclass (default:</span>
+<span class="sd">        ``&#39;default&#39;``).</span>
+
+<span class="sd">    `full`</span>
+<span class="sd">        Tells the formatter to output a &quot;full&quot; document, i.e. a complete</span>
+<span class="sd">        self-contained document (default: ``False``).</span>
+
+<span class="sd">    `title`</span>
+<span class="sd">        If `full` is true, the title that should be used to caption the</span>
+<span class="sd">        document (default: ``&#39;&#39;``).</span>
+
+<span class="sd">    `docclass`</span>
+<span class="sd">        If the `full` option is enabled, this is the document class to use</span>
+<span class="sd">        (default: ``&#39;article&#39;``).</span>
+
+<span class="sd">    `preamble`</span>
+<span class="sd">        If the `full` option is enabled, this can be further preamble commands,</span>
+<span class="sd">        e.g. ``\usepackage`` (default: ``&#39;&#39;``).</span>
+
+<span class="sd">    `linenos`</span>
+<span class="sd">        If set to ``True``, output line numbers (default: ``False``).</span>
+
+<span class="sd">    `linenostart`</span>
+<span class="sd">        The line number for the first line (default: ``1``).</span>
+
+<span class="sd">    `linenostep`</span>
+<span class="sd">        If set to a number n &gt; 1, only every nth line number is printed.</span>
+
+<span class="sd">    `verboptions`</span>
+<span class="sd">        Additional options given to the Verbatim environment (see the *fancyvrb*</span>
+<span class="sd">        docs for possible values) (default: ``&#39;&#39;``).</span>
+
+<span class="sd">    `commandprefix`</span>
+<span class="sd">        The LaTeX commands used to produce colored output are constructed</span>
+<span class="sd">        using this prefix and some letters (default: ``&#39;PY&#39;``).</span>
+<span class="sd">        *New in Pygments 0.7.*</span>
+
+<span class="sd">        *New in Pygments 0.10:* the default is now ``&#39;PY&#39;`` instead of ``&#39;C&#39;``.</span>
+
+<span class="sd">    `texcomments`</span>
+<span class="sd">        If set to ``True``, enables LaTeX comment lines.  That is, LaTex markup</span>
+<span class="sd">        in comment tokens is not escaped so that LaTeX can render it (default:</span>
+<span class="sd">        ``False``).  *New in Pygments 1.2.*</span>
+
+<span class="sd">    `mathescape`</span>
+<span class="sd">        If set to ``True``, enables LaTeX math mode escape in comments. That</span>
+<span class="sd">        is, ``&#39;$...$&#39;`` inside a comment will trigger math mode (default:</span>
+<span class="sd">        ``False``).  *New in Pygments 1.2.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;LaTeX&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;latex&#39;</span><span class="p">,</span> <span class="s">&#39;tex&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;*.tex&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Formatter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docclass</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;docclass&#39;</span><span class="p">,</span> <span class="s">&#39;article&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preamble</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;preamble&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linenos</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;linenos&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linenostart</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">get_int_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;linenostart&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linenostep</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">get_int_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;linenostep&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verboptions</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;verboptions&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nobackground</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;nobackground&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;commandprefix&#39;</span><span class="p">,</span> <span class="s">&#39;PY&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">texcomments</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;texcomments&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mathescape</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;mathescape&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_stylesheet</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_create_stylesheet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">t2n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ttype2name</span> <span class="o">=</span> <span class="p">{</span><span class="n">Token</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="p">}</span>
+        <span class="n">c2d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmd2def</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span>
+
+        <span class="k">def</span> <span class="nf">rgbcolor</span><span class="p">(</span><span class="n">col</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">col</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;</span><span class="si">%.2f</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">col</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">&#39;1,1,1&#39;</span>
+
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">ndef</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">_get_ttype_name</span><span class="p">(</span><span class="n">ttype</span><span class="p">)</span>
+            <span class="n">cmndef</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;bold&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="s">r&#39;\let\$$@bf=\textbf&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;italic&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="s">r&#39;\let\$$@it=\textit&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;underline&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="s">r&#39;\let\$$@ul=\underline&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;roman&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="s">r&#39;\let\$$@ff=\textrm&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;sans&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="s">r&#39;\let\$$@ff=\textsf&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;mono&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="s">r&#39;\let\$$@ff=\textsf&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="p">(</span><span class="s">r&#39;\def\$$@tc##1{\textcolor[rgb]{</span><span class="si">%s</span><span class="s">}{##1}}&#39;</span> <span class="o">%</span>
+                           <span class="n">rgbcolor</span><span class="p">(</span><span class="n">ndef</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;border&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="p">(</span><span class="s">r&#39;\def\$$@bc##1{\setlength{\fboxsep}{0pt}&#39;</span>
+                           <span class="s">r&#39;\fcolorbox[rgb]{</span><span class="si">%s</span><span class="s">}{</span><span class="si">%s</span><span class="s">}{\strut ##1}}&#39;</span> <span class="o">%</span>
+                           <span class="p">(</span><span class="n">rgbcolor</span><span class="p">(</span><span class="n">ndef</span><span class="p">[</span><span class="s">&#39;border&#39;</span><span class="p">]),</span>
+                            <span class="n">rgbcolor</span><span class="p">(</span><span class="n">ndef</span><span class="p">[</span><span class="s">&#39;bgcolor&#39;</span><span class="p">])))</span>
+            <span class="k">elif</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;bgcolor&#39;</span><span class="p">]:</span>
+                <span class="n">cmndef</span> <span class="o">+=</span> <span class="p">(</span><span class="s">r&#39;\def\$$@bc##1{\setlength{\fboxsep}{0pt}&#39;</span>
+                           <span class="s">r&#39;\colorbox[rgb]{</span><span class="si">%s</span><span class="s">}{\strut ##1}}&#39;</span> <span class="o">%</span>
+                           <span class="n">rgbcolor</span><span class="p">(</span><span class="n">ndef</span><span class="p">[</span><span class="s">&#39;bgcolor&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">cmndef</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">cmndef</span> <span class="o">=</span> <span class="n">cmndef</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;$$&#39;</span><span class="p">,</span> <span class="n">cp</span><span class="p">)</span>
+            <span class="n">t2n</span><span class="p">[</span><span class="n">ttype</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="n">c2d</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmndef</span>
+
+<div class="viewcode-block" id="LatexFormatter.get_style_defs"><a class="viewcode-back" href="../../../formatters/latex.html#pygments.formatters.latex.LatexFormatter.get_style_defs">[docs]</a>    <span class="k">def</span> <span class="nf">get_style_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the command sequences needed to define the commands</span>
+<span class="sd">        used to format text in the verbatim environment. ``arg`` is ignored.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span>
+        <span class="n">styles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">definition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmd2def</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">styles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">r&#39;\expandafter\def\csname </span><span class="si">%s</span><span class="s">@tok@</span><span class="si">%s</span><span class="s">\endcsname{</span><span class="si">%s</span><span class="s">}&#39;</span> <span class="o">%</span>
+                          <span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">definition</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">STYLE_TEMPLATE</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;cp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span><span class="p">,</span>
+                                 <span class="s">&#39;styles&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">styles</span><span class="p">)}</span>
+</div>
+    <span class="k">def</span> <span class="nf">format_unencoded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokensource</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+        <span class="c"># TODO: add support for background colors</span>
+        <span class="n">t2n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ttype2name</span>
+        <span class="n">cp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">full</span><span class="p">:</span>
+            <span class="n">realoutfile</span> <span class="o">=</span> <span class="n">outfile</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">ur&#39;\begin{Verbatim}[commandchars=</span><span class="se">\\</span><span class="s">\{\}&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">linenos</span><span class="p">:</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linenostart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">linenostep</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">u&#39;,numbers=left&#39;</span> <span class="o">+</span>
+                          <span class="p">(</span><span class="n">start</span> <span class="ow">and</span> <span class="s">u&#39;,firstnumber=</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">start</span> <span class="ow">or</span> <span class="s">u&#39;&#39;</span><span class="p">)</span> <span class="o">+</span>
+                          <span class="p">(</span><span class="n">step</span> <span class="ow">and</span> <span class="s">u&#39;,stepnumber=</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">step</span> <span class="ow">or</span> <span class="s">u&#39;&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mathescape</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">texcomments</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">ur&#39;,codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8}&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verboptions</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">u&#39;,&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">verboptions</span><span class="p">)</span>
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">u&#39;]</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">tokensource</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ttype</span> <span class="ow">in</span> <span class="n">Token</span><span class="o">.</span><span class="n">Comment</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">texcomments</span><span class="p">:</span>
+                    <span class="c"># Try to guess comment starting lexeme and escape it ...</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                            <span class="k">break</span>
+                        <span class="n">start</span> <span class="o">+=</span> <span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">start</span><span class="p">):]</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">escape_tex</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span><span class="p">)</span>
+
+                    <span class="c"># ... but do not escape inside comment.</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">value</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mathescape</span><span class="p">:</span>
+                    <span class="c"># Only escape parts not inside a math environment.</span>
+                    <span class="n">parts</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;$&#39;</span><span class="p">)</span>
+                    <span class="n">in_math</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_math</span><span class="p">:</span>
+                            <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">escape_tex</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span><span class="p">)</span>
+                        <span class="n">in_math</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">in_math</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;$&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">escape_tex</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">escape_tex</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">commandprefix</span><span class="p">)</span>
+            <span class="n">styles</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">while</span> <span class="n">ttype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Token</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">styles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t2n</span><span class="p">[</span><span class="n">ttype</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="c"># not in current style</span>
+                    <span class="n">styles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_get_ttype_name</span><span class="p">(</span><span class="n">ttype</span><span class="p">))</span>
+                <span class="n">ttype</span> <span class="o">=</span> <span class="n">ttype</span><span class="o">.</span><span class="n">parent</span>
+            <span class="n">styleval</span> <span class="o">=</span> <span class="s">&#39;+&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">styles</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">styleval</span><span class="p">:</span>
+                <span class="n">spl</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">spl</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\</span><span class="si">%s</span><span class="s">{</span><span class="si">%s</span><span class="s">}{</span><span class="si">%s</span><span class="s">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">styleval</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\</span><span class="si">%s</span><span class="s">{</span><span class="si">%s</span><span class="s">}{</span><span class="si">%s</span><span class="s">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">styleval</span><span class="p">,</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">u&#39;</span><span class="se">\\</span><span class="s">end{Verbatim}</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">full</span><span class="p">:</span>
+            <span class="n">realoutfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">DOC_TEMPLATE</span> <span class="o">%</span>
+                <span class="nb">dict</span><span class="p">(</span><span class="n">docclass</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">docclass</span><span class="p">,</span>
+                     <span class="n">preamble</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preamble</span><span class="p">,</span>
+                     <span class="n">title</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+                     <span class="n">encoding</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="ow">or</span> <span class="s">&#39;latin1&#39;</span><span class="p">,</span>
+                     <span class="n">styledefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_style_defs</span><span class="p">(),</span>
+                     <span class="n">code</span>      <span class="o">=</span> <span class="n">outfile</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" >pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

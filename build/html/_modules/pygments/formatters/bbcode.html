@@ -1,0 +1,207 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.formatters.bbcode &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../../index.html" />
+    <link rel="up" title="pygments.formatters" href="../formatters.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" accesskey="U">pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.formatters.bbcode</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.formatters.bbcode</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    BBcode formatter.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">pygments.formatter</span> <span class="kn">import</span> <span class="n">Formatter</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">get_bool_opt</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;BBCodeFormatter&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="BBCodeFormatter"><a class="viewcode-back" href="../../../formatters/bbcode.html#pygments.formatters.bbcode.BBCodeFormatter">[docs]</a><span class="k">class</span> <span class="nc">BBCodeFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format tokens with BBcodes. These formatting codes are used by many</span>
+<span class="sd">    bulletin boards, so you can highlight your sourcecode with pygments before</span>
+<span class="sd">    posting it there.</span>
+
+<span class="sd">    This formatter has no support for background colors and borders, as there</span>
+<span class="sd">    are no common BBcode tags for that.</span>
+
+<span class="sd">    Some board systems (e.g. phpBB) don&#39;t support colors in their [code] tag,</span>
+<span class="sd">    so you can&#39;t use the highlighting together with that tag.</span>
+<span class="sd">    Text in a [code] tag usually is shown with a monospace font (which this</span>
+<span class="sd">    formatter can do with the ``monofont`` option) and no spaces (which you</span>
+<span class="sd">    need for indentation) are removed.</span>
+
+<span class="sd">    Additional options accepted:</span>
+
+<span class="sd">    `style`</span>
+<span class="sd">        The style to use, can be a string or a Style subclass (default:</span>
+<span class="sd">        ``&#39;default&#39;``).</span>
+
+<span class="sd">    `codetag`</span>
+<span class="sd">        If set to true, put the output into ``[code]`` tags (default:</span>
+<span class="sd">        ``false``)</span>
+
+<span class="sd">    `monofont`</span>
+<span class="sd">        If set to true, add a tag to show the code with a monospace font</span>
+<span class="sd">        (default: ``false``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;BBCode&#39;</span>
+    <span class="n">aliases</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;bbcode&#39;</span><span class="p">,</span> <span class="s">&#39;bb&#39;</span><span class="p">]</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Formatter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_code</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;codetag&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mono</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;monofont&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">styles</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_make_styles</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_make_styles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">ndef</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]:</span>
+                <span class="n">start</span> <span class="o">+=</span> <span class="s">&#39;[color=#</span><span class="si">%s</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;color&#39;</span><span class="p">]</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="s">&#39;[/color]&#39;</span> <span class="o">+</span> <span class="n">end</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;bold&#39;</span><span class="p">]:</span>
+                <span class="n">start</span> <span class="o">+=</span> <span class="s">&#39;[b]&#39;</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="s">&#39;[/b]&#39;</span> <span class="o">+</span> <span class="n">end</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;italic&#39;</span><span class="p">]:</span>
+                <span class="n">start</span> <span class="o">+=</span> <span class="s">&#39;[i]&#39;</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="s">&#39;[/i]&#39;</span> <span class="o">+</span> <span class="n">end</span>
+            <span class="k">if</span> <span class="n">ndef</span><span class="p">[</span><span class="s">&#39;underline&#39;</span><span class="p">]:</span>
+                <span class="n">start</span> <span class="o">+=</span> <span class="s">&#39;[u]&#39;</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="s">&#39;[/u]&#39;</span> <span class="o">+</span> <span class="n">end</span>
+            <span class="c"># there are no common BBcodes for background-color and border</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="p">[</span><span class="n">ttype</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
+
+    <span class="k">def</span> <span class="nf">format_unencoded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokensource</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;[code]&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mono</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;[font=monospace]&#39;</span><span class="p">)</span>
+
+        <span class="n">lastval</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">lasttype</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">tokensource</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">ttype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="p">:</span>
+                <span class="n">ttype</span> <span class="o">=</span> <span class="n">ttype</span><span class="o">.</span><span class="n">parent</span>
+            <span class="k">if</span> <span class="n">ttype</span> <span class="o">==</span> <span class="n">lasttype</span><span class="p">:</span>
+                <span class="n">lastval</span> <span class="o">+=</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lastval</span><span class="p">:</span>
+                    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="p">[</span><span class="n">lasttype</span><span class="p">]</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">start</span><span class="p">,</span> <span class="n">lastval</span><span class="p">,</span> <span class="n">end</span><span class="p">)))</span>
+                <span class="n">lastval</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="n">lasttype</span> <span class="o">=</span> <span class="n">ttype</span>
+
+        <span class="k">if</span> <span class="n">lastval</span><span class="p">:</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="p">[</span><span class="n">lasttype</span><span class="p">]</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">start</span><span class="p">,</span> <span class="n">lastval</span><span class="p">,</span> <span class="n">end</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mono</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;[/font]&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;[/code]&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mono</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../pygments.html" >pygments</a> &raquo;</li>
+          <li><a href="../formatters.html" >pygments.formatters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

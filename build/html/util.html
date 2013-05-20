@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.util &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.util"></span><div class="section" id="pygments-util">
+<h1>pygments.util<a class="headerlink" href="#pygments-util" title="Permalink to this headline">¶</a></h1>
+<p>Utility functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="exception">
+<dt id="pygments.util.ClassNotFound">
+<em class="property">exception </em><tt class="descclassname">pygments.util.</tt><tt class="descname">ClassNotFound</tt><a class="reference internal" href="_modules/pygments/util.html#ClassNotFound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.util.ClassNotFound" title="Permalink to this definition">¶</a></dt>
+<dd><p>If one of the get_*_by_* functions didn&#8217;t find a matching class.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.util.doctype_matches">
+<tt class="descclassname">pygments.util.</tt><tt class="descname">doctype_matches</tt><big>(</big><em>text</em>, <em>regex</em><big>)</big><a class="reference internal" href="_modules/pygments/util.html#doctype_matches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.util.doctype_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the doctype matches a regular expression (if present).
+Note that this method only checks the first part of a DOCTYPE.
+eg: &#8216;html PUBLIC &#8220;-//W3C//DTD XHTML 1.0 Strict//EN&#8221;&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.util.html_doctype_matches">
+<tt class="descclassname">pygments.util.</tt><tt class="descname">html_doctype_matches</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="_modules/pygments/util.html#html_doctype_matches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.util.html_doctype_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the file looks like it has a html doctype.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.util.looks_like_xml">
+<tt class="descclassname">pygments.util.</tt><tt class="descname">looks_like_xml</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="_modules/pygments/util.html#looks_like_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.util.looks_like_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a doctype exists or if we have some tags.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.util.make_analysator">
+<tt class="descclassname">pygments.util.</tt><tt class="descname">make_analysator</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="_modules/pygments/util.html#make_analysator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.util.make_analysator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a static text analysation function that
+returns float values.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.util.shebang_matches">
+<tt class="descclassname">pygments.util.</tt><tt class="descname">shebang_matches</tt><big>(</big><em>text</em>, <em>regex</em><big>)</big><a class="reference internal" href="_modules/pygments/util.html#shebang_matches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.util.shebang_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the given regular expression matches the last part of the
+shebang if one exists.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">shebang_matches</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shebang_matches</span><span class="p">(</span><span class="s">&#39;#!/usr/bin/env python&#39;</span><span class="p">,</span> <span class="s">r&#39;python(2\.\d)?&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shebang_matches</span><span class="p">(</span><span class="s">&#39;#!/usr/bin/python2.4&#39;</span><span class="p">,</span> <span class="s">r&#39;python(2\.\d)?&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shebang_matches</span><span class="p">(</span><span class="s">&#39;#!/usr/bin/python-ruby&#39;</span><span class="p">,</span> <span class="s">r&#39;python(2\.\d)?&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shebang_matches</span><span class="p">(</span><span class="s">&#39;#!/usr/bin/python/ruby&#39;</span><span class="p">,</span> <span class="s">r&#39;python(2\.\d)?&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shebang_matches</span><span class="p">(</span><span class="s">&#39;#!/usr/bin/startsomethingwith python&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                <span class="s">r&#39;python(2\.\d)?&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>It also checks for common windows executable file extensions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">shebang_matches</span><span class="p">(</span><span class="s">&#39;#!C:\Python2.4\Python.exe&#39;</span><span class="p">,</span> <span class="s">r&#39;python(2\.\d)?&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Parameters (<tt class="docutils literal"><span class="pre">'-f'</span></tt> or <tt class="docutils literal"><span class="pre">'--foo'</span></tt> are ignored so <tt class="docutils literal"><span class="pre">'perl'</span></tt> does
+the same as <tt class="docutils literal"><span class="pre">'perl</span> <span class="pre">-e'</span></tt>)</p>
+<p>Note that this method automatically searches the whole string (eg:
+the regular expression is wrapped in <tt class="docutils literal"><span class="pre">'^$'</span></tt>)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygments.util.unirange">
+<tt class="descclassname">pygments.util.</tt><tt class="descname">unirange</tt><big>(</big><em>a</em>, <em>b</em><big>)</big><a class="reference internal" href="_modules/pygments/util.html#unirange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.util.unirange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a regular expression string to match the given non-BMP range.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/util.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

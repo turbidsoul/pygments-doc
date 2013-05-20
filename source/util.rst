@@ -1,0 +1,2 @@
+.. automodule:: pygments.util
+    :members:

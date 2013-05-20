@@ -1,0 +1,452 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.filters &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="../../index.html" />
+    <link rel="up" title="pygments" href="../pygments.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" accesskey="U">pygments</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pygments.filters</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pygments.filters</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Module containing filter lookup functions and default</span>
+<span class="sd">    filters.</span>
+
+<span class="sd">    :copyright: Copyright 2006-2013 by the Pygments team, see AUTHORS.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">pygments.token</span> <span class="kn">import</span> <span class="n">String</span><span class="p">,</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">Error</span><span class="p">,</span> <span class="n">Whitespace</span><span class="p">,</span> \
+    <span class="n">string_to_tokentype</span>
+<span class="kn">from</span> <span class="nn">pygments.filter</span> <span class="kn">import</span> <span class="n">Filter</span>
+<span class="kn">from</span> <span class="nn">pygments.util</span> <span class="kn">import</span> <span class="n">get_list_opt</span><span class="p">,</span> <span class="n">get_int_opt</span><span class="p">,</span> <span class="n">get_bool_opt</span><span class="p">,</span> \
+     <span class="n">get_choice_opt</span><span class="p">,</span> <span class="n">ClassNotFound</span><span class="p">,</span> <span class="n">OptionError</span>
+<span class="kn">from</span> <span class="nn">pygments.plugin</span> <span class="kn">import</span> <span class="n">find_plugin_filters</span>
+
+
+<div class="viewcode-block" id="find_filter_class"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.find_filter_class">[docs]</a><span class="k">def</span> <span class="nf">find_filter_class</span><span class="p">(</span><span class="n">filtername</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lookup a filter by name. Return None if not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filtername</span> <span class="ow">in</span> <span class="n">FILTERS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">FILTERS</span><span class="p">[</span><span class="n">filtername</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">find_plugin_filters</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">filtername</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span>
+    <span class="k">return</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="get_filter_by_name"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.get_filter_by_name">[docs]</a><span class="k">def</span> <span class="nf">get_filter_by_name</span><span class="p">(</span><span class="n">filtername</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return an instantiated filter. Options are passed to the filter</span>
+<span class="sd">    initializer if wanted. Raise a ClassNotFound if not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cls</span> <span class="o">=</span> <span class="n">find_filter_class</span><span class="p">(</span><span class="n">filtername</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cls</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClassNotFound</span><span class="p">(</span><span class="s">&#39;filter </span><span class="si">%r</span><span class="s"> not found&#39;</span> <span class="o">%</span> <span class="n">filtername</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_all_filters"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.get_all_filters">[docs]</a><span class="k">def</span> <span class="nf">get_all_filters</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a generator of all filter names.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">FILTERS</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">name</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">find_plugin_filters</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="n">name</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_replace_special</span><span class="p">(</span><span class="n">ttype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span> <span class="n">specialttype</span><span class="p">,</span>
+                     <span class="n">replacefunc</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">):</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">regex</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">!=</span> <span class="n">last</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">last</span><span class="p">:</span><span class="n">start</span><span class="p">]</span>
+        <span class="k">yield</span> <span class="n">specialttype</span><span class="p">,</span> <span class="n">replacefunc</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">end</span>
+    <span class="k">if</span> <span class="n">last</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">last</span><span class="p">:]</span>
+
+
+<div class="viewcode-block" id="CodeTagFilter"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.CodeTagFilter">[docs]</a><span class="k">class</span> <span class="nc">CodeTagFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Highlight special code tags in comments and docstrings.</span>
+
+<span class="sd">    Options accepted:</span>
+
+<span class="sd">    `codetags` : list of strings</span>
+<span class="sd">       A list of strings that are flagged as code tags.  The default is to</span>
+<span class="sd">       highlight ``XXX``, ``TODO``, ``BUG`` and ``NOTE``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Filter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">get_list_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;codetags&#39;</span><span class="p">,</span>
+                            <span class="p">[</span><span class="s">&#39;XXX&#39;</span><span class="p">,</span> <span class="s">&#39;TODO&#39;</span><span class="p">,</span> <span class="s">&#39;BUG&#39;</span><span class="p">,</span> <span class="s">&#39;NOTE&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\b(</span><span class="si">%s</span><span class="s">)\b&#39;</span> <span class="o">%</span> <span class="s">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">if</span> <span class="n">tag</span>
+        <span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="n">regex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_re</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ttype</span> <span class="ow">in</span> <span class="n">String</span><span class="o">.</span><span class="n">Doc</span> <span class="ow">or</span> \
+               <span class="n">ttype</span> <span class="ow">in</span> <span class="n">Comment</span> <span class="ow">and</span> \
+               <span class="n">ttype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">sttype</span><span class="p">,</span> <span class="n">svalue</span> <span class="ow">in</span> <span class="n">_replace_special</span><span class="p">(</span><span class="n">ttype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span>
+                                                       <span class="n">Comment</span><span class="o">.</span><span class="n">Special</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">sttype</span><span class="p">,</span> <span class="n">svalue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span>
+
+</div>
+<div class="viewcode-block" id="KeywordCaseFilter"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.KeywordCaseFilter">[docs]</a><span class="k">class</span> <span class="nc">KeywordCaseFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert keywords to lowercase or uppercase or capitalize them, which</span>
+<span class="sd">    means first letter uppercase, rest lowercase.</span>
+
+<span class="sd">    This can be useful e.g. if you highlight Pascal code and want to adapt the</span>
+<span class="sd">    code to your styleguide.</span>
+
+<span class="sd">    Options accepted:</span>
+
+<span class="sd">    `case` : string</span>
+<span class="sd">       The casing to convert keywords to. Must be one of ``&#39;lower&#39;``,</span>
+<span class="sd">       ``&#39;upper&#39;`` or ``&#39;capitalize&#39;``.  The default is ``&#39;lower&#39;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Filter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="n">case</span> <span class="o">=</span> <span class="n">get_choice_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;case&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="s">&#39;upper&#39;</span><span class="p">,</span> <span class="s">&#39;capitalize&#39;</span><span class="p">],</span> <span class="s">&#39;lower&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">unicode</span><span class="p">,</span> <span class="n">case</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ttype</span> <span class="ow">in</span> <span class="n">Keyword</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span>
+
+</div>
+<div class="viewcode-block" id="NameHighlightFilter"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.NameHighlightFilter">[docs]</a><span class="k">class</span> <span class="nc">NameHighlightFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Highlight a normal Name token with a different token type.</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        filter = NameHighlightFilter(</span>
+<span class="sd">            names=[&#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;],</span>
+<span class="sd">            tokentype=Name.Function,</span>
+<span class="sd">        )</span>
+
+<span class="sd">    This would highlight the names &quot;foo&quot;, &quot;bar&quot; and &quot;baz&quot;</span>
+<span class="sd">    as functions. `Name.Function` is the default token type.</span>
+
+<span class="sd">    Options accepted:</span>
+
+<span class="sd">    `names` : list of strings</span>
+<span class="sd">      A list of names that should be given the different token type.</span>
+<span class="sd">      There is no default.</span>
+<span class="sd">    `tokentype` : TokenType or string</span>
+<span class="sd">      A token type or a string containing a token type name that is</span>
+<span class="sd">      used for highlighting the strings in `names`.  The default is</span>
+<span class="sd">      `Name.Function`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Filter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">get_list_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;names&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">tokentype</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;tokentype&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tokentype</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tokentype</span> <span class="o">=</span> <span class="n">string_to_tokentype</span><span class="p">(</span><span class="n">tokentype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tokentype</span> <span class="o">=</span> <span class="n">Name</span><span class="o">.</span><span class="n">Function</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ttype</span> <span class="ow">is</span> <span class="n">Name</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokentype</span><span class="p">,</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span>
+
+</div>
+<span class="k">class</span> <span class="nc">ErrorToken</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<div class="viewcode-block" id="RaiseOnErrorTokenFilter"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.RaiseOnErrorTokenFilter">[docs]</a><span class="k">class</span> <span class="nc">RaiseOnErrorTokenFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raise an exception when the lexer generates an error token.</span>
+
+<span class="sd">    Options accepted:</span>
+
+<span class="sd">    `excclass` : Exception class</span>
+<span class="sd">      The exception class to raise.</span>
+<span class="sd">      The default is `pygments.filters.ErrorToken`.</span>
+
+<span class="sd">    *New in Pygments 0.8.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Filter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;excclass&#39;</span><span class="p">,</span> <span class="n">ErrorToken</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># issubclass() will raise TypeError if first argument is not a class</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exception</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OptionError</span><span class="p">(</span><span class="s">&#39;excclass option is not an exception class&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ttype</span> <span class="ow">is</span> <span class="n">Error</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span>
+
+</div>
+<div class="viewcode-block" id="VisibleWhitespaceFilter"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.VisibleWhitespaceFilter">[docs]</a><span class="k">class</span> <span class="nc">VisibleWhitespaceFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert tabs, newlines and/or spaces to visible characters.</span>
+
+<span class="sd">    Options accepted:</span>
+
+<span class="sd">    `spaces` : string or bool</span>
+<span class="sd">      If this is a one-character string, spaces will be replaces by this string.</span>
+<span class="sd">      If it is another true value, spaces will be replaced by ``·`` (unicode</span>
+<span class="sd">      MIDDLE DOT).  If it is a false value, spaces will not be replaced.  The</span>
+<span class="sd">      default is ``False``.</span>
+<span class="sd">    `tabs` : string or bool</span>
+<span class="sd">      The same as for `spaces`, but the default replacement character is ``»``</span>
+<span class="sd">      (unicode RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK).  The default value</span>
+<span class="sd">      is ``False``.  Note: this will not work if the `tabsize` option for the</span>
+<span class="sd">      lexer is nonzero, as tabs will already have been expanded then.</span>
+<span class="sd">    `tabsize` : int</span>
+<span class="sd">      If tabs are to be replaced by this filter (see the `tabs` option), this</span>
+<span class="sd">      is the total number of characters that a tab should be expanded to.</span>
+<span class="sd">      The default is ``8``.</span>
+<span class="sd">    `newlines` : string or bool</span>
+<span class="sd">      The same as for `spaces`, but the default replacement character is ``¶``</span>
+<span class="sd">      (unicode PILCROW SIGN).  The default value is ``False``.</span>
+<span class="sd">    `wstokentype` : bool</span>
+<span class="sd">      If true, give whitespace the special `Whitespace` token type.  This allows</span>
+<span class="sd">      styling the visible whitespace differently (e.g. greyed out), but it can</span>
+<span class="sd">      disrupt background colors.  The default is ``True``.</span>
+
+<span class="sd">    *New in Pygments 0.8.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Filter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">default</span> <span class="ow">in</span> <span class="p">{</span><span class="s">&#39;spaces&#39;</span><span class="p">:</span> <span class="s">u&#39;·&#39;</span><span class="p">,</span> <span class="s">&#39;tabs&#39;</span><span class="p">:</span> <span class="s">u&#39;»&#39;</span><span class="p">,</span> <span class="s">&#39;newlines&#39;</span><span class="p">:</span> <span class="s">u&#39;¶&#39;</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">opt</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">opt</span> <span class="ow">and</span> <span class="n">default</span> <span class="ow">or</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+        <span class="n">tabsize</span> <span class="o">=</span> <span class="n">get_int_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;tabsize&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span> <span class="o">+=</span> <span class="s">&#39; &#39;</span><span class="o">*</span><span class="p">(</span><span class="n">tabsize</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">newlines</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">newlines</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wstt</span> <span class="o">=</span> <span class="n">get_bool_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;wstokentype&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wstt</span><span class="p">:</span>
+            <span class="n">spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spaces</span> <span class="ow">or</span> <span class="s">&#39; &#39;</span>
+            <span class="n">tabs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span> <span class="ow">or</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span>
+            <span class="n">newlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">newlines</span> <span class="ow">or</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+            <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\s&#39;</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">replacefunc</span><span class="p">(</span><span class="n">wschar</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">wschar</span> <span class="o">==</span> <span class="s">&#39; &#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">spaces</span>
+                <span class="k">elif</span> <span class="n">wschar</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">tabs</span>
+                <span class="k">elif</span> <span class="n">wschar</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">newlines</span>
+                <span class="k">return</span> <span class="n">wschar</span>
+
+            <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">sttype</span><span class="p">,</span> <span class="n">svalue</span> <span class="ow">in</span> <span class="n">_replace_special</span><span class="p">(</span><span class="n">ttype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span>
+                                                       <span class="n">Whitespace</span><span class="p">,</span> <span class="n">replacefunc</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">sttype</span><span class="p">,</span> <span class="n">svalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spaces</span><span class="p">,</span> <span class="n">tabs</span><span class="p">,</span> <span class="n">newlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spaces</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tabs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">newlines</span>
+            <span class="c"># simpler processing</span>
+            <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">spaces</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="n">spaces</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">tabs</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">tabs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">newlines</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">newlines</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span>
+
+</div>
+<div class="viewcode-block" id="GobbleFilter"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.GobbleFilter">[docs]</a><span class="k">class</span> <span class="nc">GobbleFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gobbles source code lines (eats initial characters).</span>
+
+<span class="sd">    This filter drops the first ``n`` characters off every line of code.  This</span>
+<span class="sd">    may be useful when the source code fed to the lexer is indented by a fixed</span>
+<span class="sd">    amount of space that isn&#39;t desired in the output.</span>
+
+<span class="sd">    Options accepted:</span>
+
+<span class="sd">    `n` : int</span>
+<span class="sd">       The number of characters to gobble.</span>
+
+<span class="sd">    *New in Pygments 1.2.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Filter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">get_int_opt</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s">&#39;n&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">gobble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">left</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="n">left</span><span class="p">:],</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">left</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">n</span> <span class="c"># How many characters left to gobble.</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="c"># Remove ``left`` tokens from first line, ``n`` from all others.</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">left</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gobble</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">left</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)):</span>
+                <span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">left</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gobble</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span>
+
+</div>
+<div class="viewcode-block" id="TokenMergeFilter"><a class="viewcode-back" href="../../filters/filters.html#pygments.filters.TokenMergeFilter">[docs]</a><span class="k">class</span> <span class="nc">TokenMergeFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merges consecutive tokens with the same token type in the output stream of a</span>
+<span class="sd">    lexer.</span>
+
+<span class="sd">    *New in Pygments 1.2.*</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="n">Filter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="n">current_type</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">current_value</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">ttype</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ttype</span> <span class="ow">is</span> <span class="n">current_type</span><span class="p">:</span>
+                <span class="n">current_value</span> <span class="o">+=</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">current_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">current_type</span><span class="p">,</span> <span class="n">current_value</span>
+                <span class="n">current_type</span> <span class="o">=</span> <span class="n">ttype</span>
+                <span class="n">current_value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">current_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">current_type</span><span class="p">,</span> <span class="n">current_value</span>
+
+</div>
+<span class="n">FILTERS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;codetagify&#39;</span><span class="p">:</span>     <span class="n">CodeTagFilter</span><span class="p">,</span>
+    <span class="s">&#39;keywordcase&#39;</span><span class="p">:</span>    <span class="n">KeywordCaseFilter</span><span class="p">,</span>
+    <span class="s">&#39;highlight&#39;</span><span class="p">:</span>      <span class="n">NameHighlightFilter</span><span class="p">,</span>
+    <span class="s">&#39;raiseonerror&#39;</span><span class="p">:</span>   <span class="n">RaiseOnErrorTokenFilter</span><span class="p">,</span>
+    <span class="s">&#39;whitespace&#39;</span><span class="p">:</span>     <span class="n">VisibleWhitespaceFilter</span><span class="p">,</span>
+    <span class="s">&#39;gobble&#39;</span><span class="p">:</span>         <span class="n">GobbleFilter</span><span class="p">,</span>
+    <span class="s">&#39;tokenmerge&#39;</span><span class="p">:</span>     <span class="n">TokenMergeFilter</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pygments.html" >pygments</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

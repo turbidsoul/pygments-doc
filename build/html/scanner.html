@@ -1,0 +1,169 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pygments.scanner &mdash; pygments-doc 1.1.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pygments-doc 1.1.3 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pygments.scanner"></span><div class="section" id="pygments-scanner">
+<h1>pygments.scanner<a class="headerlink" href="#pygments-scanner" title="Permalink to this headline">¶</a></h1>
+<p>This library implements a regex based scanner. Some languages
+like Pascal are easy to parse but have some keywords that
+depend on the context. Because of this it&#8217;s impossible to lex
+that just by using a regular expression lexer like the
+<cite>RegexLexer</cite>.</p>
+<p>Have a look at the <cite>DelphiLexer</cite> to get an idea of how to use
+this scanner.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2006-2013 by the Pygments team, see AUTHORS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="exception">
+<dt id="pygments.scanner.EndOfText">
+<em class="property">exception </em><tt class="descclassname">pygments.scanner.</tt><tt class="descname">EndOfText</tt><a class="reference internal" href="_modules/pygments/scanner.html#EndOfText"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.scanner.EndOfText" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise if end of text is reached and the user
+tried to call a match function.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pygments.scanner.Scanner">
+<em class="property">class </em><tt class="descclassname">pygments.scanner.</tt><tt class="descname">Scanner</tt><big>(</big><em>text</em>, <em>flags=0</em><big>)</big><a class="reference internal" href="_modules/pygments/scanner.html#Scanner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.scanner.Scanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple scanner</p>
+<p>All method patterns are regular expression strings (not
+compiled expressions!)</p>
+<dl class="method">
+<dt id="pygments.scanner.Scanner.check">
+<tt class="descname">check</tt><big>(</big><em>pattern</em><big>)</big><a class="reference internal" href="_modules/pygments/scanner.html#Scanner.check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.scanner.Scanner.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply <cite>pattern</cite> on the current position and return
+the match object. (Doesn&#8217;t touch pos). Use this for
+lookahead.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pygments.scanner.Scanner.eos">
+<tt class="descname">eos</tt><a class="reference internal" href="_modules/pygments/scanner.html#Scanner.eos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.scanner.Scanner.eos" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>True</cite> if the scanner reached the end of text.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.scanner.Scanner.get_char">
+<tt class="descname">get_char</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pygments/scanner.html#Scanner.get_char"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.scanner.Scanner.get_char" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scan exactly one char.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.scanner.Scanner.scan">
+<tt class="descname">scan</tt><big>(</big><em>pattern</em><big>)</big><a class="reference internal" href="_modules/pygments/scanner.html#Scanner.scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.scanner.Scanner.scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scan the text for the given pattern and update pos/match
+and related fields. The return value is a boolen that
+indicates if the pattern matched. The matched value is
+stored on the instance as <tt class="docutils literal"><span class="pre">match</span></tt>, the last value is
+stored as <tt class="docutils literal"><span class="pre">last</span></tt>. <tt class="docutils literal"><span class="pre">start_pos</span></tt> is the position of the
+pointer before the pattern was matched, <tt class="docutils literal"><span class="pre">pos</span></tt> is the
+end position.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygments.scanner.Scanner.test">
+<tt class="descname">test</tt><big>(</big><em>pattern</em><big>)</big><a class="reference internal" href="_modules/pygments/scanner.html#Scanner.test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygments.scanner.Scanner.test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a pattern on the current position and check
+if it patches. Doesn&#8217;t touch pos.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/scanner.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">pygments-doc 1.1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Turbidsoul Chen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
